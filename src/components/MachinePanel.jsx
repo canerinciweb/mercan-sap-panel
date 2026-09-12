@@ -18,7 +18,6 @@ export default function MachinePanel({
           onClick={() => setSelectedMachine(machine.name)}
         >
           <span>{machine.name}</span>
-
           <strong>{machine.count}</strong>
         </button>
       ))}

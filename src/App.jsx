@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import "./App.css";
 import Header from "./components/Header";
@@ -36,24 +35,27 @@ export default function App() {
 
   const merged = useMemo(() => mergeData(zparti, zpp), [zparti, zpp]);
 
+  // Hat listesini ZPP'den oluştur
   const machines = useMemo(() => {
     const counts = {};
 
-    merged.forEach((item) => {
-      item.machines.split(", ").forEach((machine) => {
-        counts[machine] = (counts[machine] || 0) + 1;
-      });
+    zpp.forEach((row) => {
+      const machine = (row.machine || "").trim();
+
+      if (!machine) return;
+
+      counts[machine] = (counts[machine] || 0) + 1;
     });
 
     const list = Object.keys(counts)
-      .sort()
+      .sort((a, b) => a.localeCompare(b, "tr"))
       .map((name) => ({
         name,
         count: counts[name],
       }));
 
     return [{ name: "Tümü", count: merged.length }, ...list];
-  }, [merged]);
+  }, [zpp, merged]);
 
   const filtered = useMemo(() => {
     let data = [...merged];
@@ -66,7 +68,10 @@ export default function App() {
 
     if (selectedMachine !== "Tümü") {
       data = data.filter((x) =>
-        x.machines.split(", ").includes(selectedMachine)
+        x.machines
+          .split(",")
+          .map((m) => m.trim())
+          .includes(selectedMachine)
       );
     }
 
@@ -102,7 +107,7 @@ export default function App() {
       />
 
       <div className="cards">
-               <div className="card">
+        <div className="card">
           <small>3 Günlük Malzeme</small>
           <h2>{filtered.length}</h2>
         </div>
