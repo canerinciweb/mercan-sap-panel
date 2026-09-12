@@ -4,24 +4,29 @@ export default function Toolbar({
   search,
   setSearch,
 }) {
-  const tabs = ["Her İkisi", "Hammadde", "Silikon"];
+  const buttons = ["Her İkisi", "Hammadde", "Silikon"];
 
   return (
     <div className="toolbar">
-      <div className="tabs">
-        {tabs.map((tab) => (
+      <div className="filters">
+        {buttons.map((item) => (
           <button
-            key={tab}
-            className={category === tab ? "active" : ""}
-            onClick={() => setCategory(tab)}
+            key={item}
+            className={
+              category === item
+                ? "filterButton active"
+                : "filterButton"
+            }
+            onClick={() => setCategory(item)}
           >
-            {tab}
+            {item}
           </button>
         ))}
       </div>
 
       <input
-        className="search"
+        className="searchInput"
+        type="text"
         placeholder="Kod, malzeme veya hat ara..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}

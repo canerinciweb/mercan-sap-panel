@@ -1,39 +1,40 @@
 export default function UploadPanel({
-handleZparti,
-handleZpp,
-zpartiName,
-zppName
-}){
+  handleZparti,
+  handleZpp,
+  zpartiName,
+  zppName,
+}) {
+  return (
+    <div className="uploadPanel">
+      <div className="uploadBox">
+        <label className="uploadButton">
+          📁 ZPARTI
+          <input
+            type="file"
+            accept=".xls,.xlsx"
+            onChange={(e) => handleZparti(e.target.files[0])}
+          />
+        </label>
 
-return(
+        <div className="fileName">
+          {zpartiName || "ZPARTI seçilmedi"}
+        </div>
+      </div>
 
-<div className="upload">
+      <div className="uploadBox">
+        <label className="uploadButton">
+          📁 ZPPSTOK
+          <input
+            type="file"
+            accept=".xls,.xlsx"
+            onChange={(e) => handleZpp(e.target.files[0])}
+          />
+        </label>
 
-<div>
-
-<input
-type="file"
-accept=".xlsx,.xls"
-onChange={e=>handleZparti(e.target.files[0])}
-/>
-
-<div>{zpartiName||"ZPARTI seçilmedi"}</div>
-
-</div>
-
-<div>
-
-<input
-type="file"
-accept=".xlsx,.xls"
-onChange={e=>handleZpp(e.target.files[0])}
-/>
-
-<div>{zppName||"ZPPSTOK seçilmedi"}</div>
-
-</div>
-
-</div>
-
-);
+        <div className="fileName">
+          {zppName || "ZPPSTOK seçilmedi"}
+        </div>
+      </div>
+    </div>
+  );
 }
