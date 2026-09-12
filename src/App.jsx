@@ -122,18 +122,18 @@ export default function App() {
         zppName={zppName}
       />
 
-      <div className="cards">
-
+      <<div className="cards">
   <div className="card">
     <label className="cardTitle">
-      <checkbox
+      <input
+        type="checkbox"
         checked={cardFilter.threeDay}
-        onChange={(checked) =>
+        onChange={(e) =>
           setCardFilter((prev) => ({
             ...prev,
-            threeDay: checked,
-            depot: checked ? false : prev.depot,
-            critical: checked ? false : prev.critical,
+            threeDay: e.target.checked,
+            depot: e.target.checked ? false : prev.depot,
+            critical: e.target.checked ? false : prev.critical,
           }))
         }
       />
@@ -145,13 +145,14 @@ export default function App() {
 
   <div className="card">
     <label className="cardTitle">
-      <checkbox
+      <input
+        type="checkbox"
         checked={cardFilter.depot}
-        onChange={(checked) =>
+        onChange={(e) =>
           setCardFilter((prev) => ({
             ...prev,
-            depot: checked,
-            threeDay: checked ? false : prev.threeDay,
+            depot: e.target.checked,
+            threeDay: e.target.checked ? false : prev.threeDay,
           }))
         }
       />
@@ -163,13 +164,14 @@ export default function App() {
 
   <div className="card">
     <label className="cardTitle">
-      <checkbox
+      <input
+        type="checkbox"
         checked={cardFilter.critical}
-        onChange={(checked) =>
+        onChange={(e) =>
           setCardFilter((prev) => ({
             ...prev,
-            critical: checked,
-            threeDay: checked ? false : prev.threeDay,
+            critical: e.target.checked,
+            threeDay: e.target.checked ? false : prev.threeDay,
           }))
         }
       />
@@ -178,9 +180,7 @@ export default function App() {
 
     <h2>{merged.filter((x) => x.action === "Kritik").length}</h2>
   </div>
-
 </div>
-
       <div className="mainLayout">
         <MachinePanel
           machines={machines}

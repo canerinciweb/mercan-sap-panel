@@ -160,21 +160,26 @@
    CARD CHECKBOX
 =========================== */
 
+/* ===========================
+   CARD CHECKBOX
+=========================== */
+
 .cardTitle{
   display:flex;
   align-items:center;
   justify-content:center;
   gap:8px;
-  font-size:14px;
+  font-size:10px;
   font-weight:600;
   color:#475569;
   cursor:pointer;
 }
 
-.cardTitle input{
-  width:18px;
-  height:18px;
+.cardTitle input[type="checkbox"]{
+  width:16px;
+  height:16px;
   accent-color:#005b96;
+  cursor:pointer;
 }
 
 /* ===========================
