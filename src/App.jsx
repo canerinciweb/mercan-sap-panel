@@ -20,6 +20,10 @@ export default function App() {
 
   const [zpartiName, setZpartiName] = useState("");
   const [zppName, setZppName] = useState("");
+  const [cardFilter, setCardFilter] = useState({
+  threeDay: true,
+  depot: false,
+  critical: false,});
 
   async function handleZparti(file) {
     if (!file) return;
@@ -58,35 +62,47 @@ export default function App() {
   }, [zpp, merged]);
 
   const filtered = useMemo(() => {
-    let data = [...merged];
+  let data = [...merged];
 
-    if (category === "Hammadde")
-      data = data.filter((x) => x.type === "Hammadde");
+  if (category === "Hammadde")
+    data = data.filter((x) => x.type === "Hammadde");
 
-    if (category === "Silikon")
-      data = data.filter((x) => x.type === "Silikon");
+  if (category === "Silikon")
+    data = data.filter((x) => x.type === "Silikon");
 
-    if (selectedMachine !== "Tümü") {
-      data = data.filter((x) =>
-        x.machines
-          .split(",")
-          .map((m) => m.trim())
-          .includes(selectedMachine)
-      );
-    }
+  if (selectedMachine !== "Tümü") {
+    data = data.filter((x) =>
+      x.machines.split(", ").map((m) => m.trim()).includes(selectedMachine)
+    );
+  }
 
-    if (search.trim()) {
-      const q = search.toLowerCase();
+  if (search.trim()) {
+    const q = search.toLowerCase();
 
-      data = data.filter(
-        (x) =>
-          x.material.toLowerCase().includes(q) ||
-          x.name.toLowerCase().includes(q)
-      );
-    }
+    data = data.filter(
+      (x) =>
+        x.material.toLowerCase().includes(q) ||
+        x.name.toLowerCase().includes(q)
+    );
+  }
 
-    return data;
-  }, [merged, category, search, selectedMachine]);
+  const activeFilters = [];
+
+  if (cardFilter.depot) activeFilters.push("Depoya Gönder");
+  if (cardFilter.critical) activeFilters.push("Kritik");
+
+  if (activeFilters.length) {
+    data = data.filter((x) => activeFilters.includes(x.action));
+  }
+
+  return data;
+}, [
+  merged,
+  category,
+  search,
+  selectedMachine,
+  cardFilter,
+]);
 
   return (
     <div className="app">
@@ -107,21 +123,63 @@ export default function App() {
       />
 
       <div className="cards">
-        <div className="card">
-          <small>3 Günlük Malzeme</small>
-          <h2>{filtered.length}</h2>
-        </div>
 
-        <div className="card">
-          <small>Depoya Gönder</small>
-          <h2>{filtered.filter((x) => x.action === "Depoya Gönder").length}</h2>
-        </div>
+  <div className="card">
+    <label className="cardTitle">
+      <checkbox
+        checked={cardFilter.threeDay}
+        onChange={(checked) =>
+          setCardFilter((prev) => ({
+            ...prev,
+            threeDay: checked,
+            depot: checked ? false : prev.depot,
+            critical: checked ? false : prev.critical,
+          }))
+        }
+      />
+      <span>3 Günlük Malzeme</span>
+    </label>
 
-        <div className="card">
-          <small>Kritik</small>
-          <h2>{filtered.filter((x) => x.action === "Kritik").length}</h2>
-        </div>
-      </div>
+    <h2>{merged.length}</h2>
+  </div>
+
+  <div className="card">
+    <label className="cardTitle">
+      <checkbox
+        checked={cardFilter.depot}
+        onChange={(checked) =>
+          setCardFilter((prev) => ({
+            ...prev,
+            depot: checked,
+            threeDay: checked ? false : prev.threeDay,
+          }))
+        }
+      />
+      <span>Depoya Gönder</span>
+    </label>
+
+    <h2>{merged.filter((x) => x.action === "Depoya Gönder").length}</h2>
+  </div>
+
+  <div className="card">
+    <label className="cardTitle">
+      <checkbox
+        checked={cardFilter.critical}
+        onChange={(checked) =>
+          setCardFilter((prev) => ({
+            ...prev,
+            critical: checked,
+            threeDay: checked ? false : prev.threeDay,
+          }))
+        }
+      />
+      <span>Kritik</span>
+    </label>
+
+    <h2>{merged.filter((x) => x.action === "Kritik").length}</h2>
+  </div>
+
+</div>
 
       <div className="mainLayout">
         <MachinePanel

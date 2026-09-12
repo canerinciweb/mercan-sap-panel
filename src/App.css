@@ -156,6 +156,26 @@
   font-size:28px;
   color:#005b96;
 }
+/* ===========================
+   CARD CHECKBOX
+=========================== */
+
+.cardTitle{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-size:14px;
+  font-weight:600;
+  color:#475569;
+  cursor:pointer;
+}
+
+.cardTitle input{
+  width:18px;
+  height:18px;
+  accent-color:#005b96;
+}
 
 /* ===========================
    ANA LAYOUT
