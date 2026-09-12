@@ -122,7 +122,7 @@ export default function App() {
         zppName={zppName}
       />
 
-      <<div className="cards">
+      <div className="cards">
   <div className="card">
     <label className="cardTitle">
       <input
@@ -146,16 +146,16 @@ export default function App() {
   <div className="card">
     <label className="cardTitle">
       <input
-        type="checkbox"
-        checked={cardFilter.depot}
-        onChange={(e) =>
-          setCardFilter((prev) => ({
-            ...prev,
-            depot: e.target.checked,
-            threeDay: e.target.checked ? false : prev.threeDay,
-          }))
-        }
-      />
+  type="checkbox"
+  checked={cardFilter.depot}
+  onChange={(e) => {
+    setCardFilter((prev) => ({
+      ...prev,
+      depot: e.target.checked,
+      threeDay: e.target.checked ? false : prev.threeDay,
+    }));
+  }}
+/>
       <span>Depoya Gönder</span>
     </label>
 
@@ -165,16 +165,16 @@ export default function App() {
   <div className="card">
     <label className="cardTitle">
       <input
-        type="checkbox"
-        checked={cardFilter.critical}
-        onChange={(e) =>
-          setCardFilter((prev) => ({
-            ...prev,
-            critical: e.target.checked,
-            threeDay: e.target.checked ? false : prev.threeDay,
-          }))
-        }
-      />
+  type="checkbox"
+  checked={cardFilter.critical}
+  onChange={(e) => {
+    setCardFilter((prev) => ({
+      ...prev,
+      critical: e.target.checked,
+      threeDay: e.target.checked ? false : prev.threeDay,
+    }));
+  }}
+/>
       <span>Kritik</span>
     </label>
 
