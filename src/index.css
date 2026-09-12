@@ -12,15 +12,6 @@ body,
 }
 
 body{
-  font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;
-  background:#f3f6f9;
-  color:#1f2937;
-}
-
-button{
-  font:inherit;
-}
-
-input{
-  font:inherit;
+  font-family:"Segoe UI",sans-serif;
+  background:#eef3f8;
 }
