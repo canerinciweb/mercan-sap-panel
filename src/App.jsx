@@ -1,6 +1,7 @@
+
 import { useMemo, useState } from "react";
 import "./App.css";
-
+import { exportDepotExcel } from "./utils/exportExcel";
 import Header from "./components/Header";
 import Toolbar from "./components/Toolbar";
 import UploadPanel from "./components/UploadPanel";
@@ -102,6 +103,14 @@ export default function App() {
       />
 
       <div className="cards">
+        <div className="exportBar">
+  <button
+    className="excelButton"
+    onClick={() => exportDepotExcel(filtered)}
+  >
+    📥 Depoya Gönder Excel İndir
+  </button>
+</div>
         <div className="card">
           <small>3 Günlük Malzeme</small>
           <h2>{filtered.length}</h2>
