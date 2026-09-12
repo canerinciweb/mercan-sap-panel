@@ -1,28 +1,30 @@
+/* ------------------- GENEL ------------------- */
+
 .app{
   min-height:100vh;
   background:#eef3f8;
   color:#1f2937;
 }
 
-/* HEADER */
+/* ------------------- HEADER ------------------- */
 
 .header{
   background:#005b96;
   color:#fff;
   text-align:center;
-  padding:18px;
-  font-size:28px;
+  padding:14px 20px;
+  font-size:24px;
   font-weight:700;
 }
 
-/* TOOLBAR */
+/* ------------------- TOOLBAR ------------------- */
 
 .toolbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  gap:18px;
   padding:16px;
-  gap:20px;
   flex-wrap:wrap;
 }
 
@@ -32,11 +34,18 @@
 }
 
 .filterButton{
-  padding:10px 18px;
+  background:#ffffff;
   border:1px solid #cbd5e1;
-  background:#fff;
   color:#334155;
+  padding:10px 18px;
+  font-size:15px;
+  font-weight:600;
   cursor:pointer;
+  transition:.2s;
+}
+
+.filterButton:hover{
+  background:#e8f1f8;
 }
 
 .filterButton.active{
@@ -46,17 +55,19 @@
 
 .searchInput{
   width:320px;
-  padding:12px;
-  background:#2b2b2b;
+  padding:11px 14px;
+  background:#2d2d2d;
   color:#fff;
   border:none;
+  outline:none;
+  font-size:14px;
 }
 
-/* UPLOAD */
+/* ------------------- UPLOAD ------------------- */
 
 .uploadPanel{
   display:flex;
-  gap:30px;
+  gap:28px;
   padding:0 16px 18px;
   flex-wrap:wrap;
 }
@@ -64,7 +75,7 @@
 .uploadBox{
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:6px;
 }
 
 .uploadBox label{
@@ -74,10 +85,11 @@
 }
 
 .fileName{
+  font-size:13px;
   color:#64748b;
 }
 
-/* KARTLAR */
+/* ------------------- KARTLAR ------------------- */
 
 .cards{
   display:grid;
@@ -89,41 +101,45 @@
 .card{
   background:#fff;
   border-radius:12px;
-  padding:28px;
+  padding:26px;
   text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
 .card small{
+  font-size:14px;
   color:#64748b;
 }
 
 .card h2{
-  color:#005b96;
-  font-size:42px;
   margin-top:12px;
+  color:#005b96;
+  font-size:36px;
 }
 
-/* ANA LAYOUT */
+/* ------------------- ANA LAYOUT ------------------- */
 
 .mainLayout{
   display:grid;
-  grid-template-columns:210px 1fr;
+  grid-template-columns:190px 1fr;
   gap:18px;
   padding:16px;
 }
 
-/* HATLAR */
+/* ------------------- HATLAR ------------------- */
 
 .machinePanel{
   background:#fff;
   border-radius:12px;
   padding:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
   height:fit-content;
 }
 
 .machinePanel h3{
   text-align:center;
   color:#005b96;
+  font-size:15px;
   margin-bottom:14px;
 }
 
@@ -132,14 +148,25 @@
   display:flex;
   justify-content:space-between;
   align-items:center;
+  padding:10px 12px;
   margin-bottom:8px;
-  padding:11px 14px;
   border:none;
   border-radius:8px;
   background:#eef2f6;
   color:#334155;
   cursor:pointer;
+  font-size:14px;
   font-weight:600;
+  transition:.2s;
+}
+
+.machine span,
+.machine strong{
+  color:inherit;
+}
+
+.machine:hover{
+  background:#dbe7f1;
 }
 
 .machine.active{
@@ -147,13 +174,14 @@
   color:#fff;
 }
 
-/* TABLO */
+/* ------------------- TABLO ------------------- */
 
 .stockTable{
   width:100%;
   background:#fff;
   border-radius:12px;
   overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
 .stockTable table{
@@ -167,8 +195,10 @@
 
 .stockTable th{
   text-align:left;
-  padding:18px 14px;
+  padding:16px 14px;
   color:#475569;
+  font-size:15px;
+  font-weight:700;
 }
 
 .stockTable td{
@@ -176,23 +206,37 @@
   border-top:1px solid #e5e7eb;
   vertical-align:top;
   color:#334155;
+  font-size:15px;
 }
 
+.stockTable tbody tr:hover{
+  background:#f8fafc;
+}
+
+/* ------------------- MALZEME ------------------- */
+
 .materialCode{
-  font-size:30px;
+  font-size:26px;
   font-weight:700;
+  color:#334155;
 }
 
 .materialName{
-  color:#64748b;
   margin-top:8px;
+  color:#64748b;
+  font-size:14px;
+  line-height:1.4;
 }
+
+/* ------------------- MES ------------------- */
 
 .jobOrders{
   color:#475569;
-  font-size:13px;
-  line-height:1.5;
+  font-size:12px;
+  line-height:1.6;
 }
+
+/* ------------------- RENKLER ------------------- */
 
 .greenText{
   color:#0f9d58;
@@ -204,12 +248,16 @@
   font-weight:700;
 }
 
+/* ------------------- DURUM BUTONLARI ------------------- */
+
 .statusButton{
   border:none;
   border-radius:8px;
-  padding:10px 18px;
+  padding:9px 16px;
   color:#fff;
+  font-size:14px;
   font-weight:700;
+  cursor:pointer;
 }
 
 .statusButton.green{
@@ -220,7 +268,14 @@
   background:#dc2626;
 }
 
+.statusButton.blue{
+  background:#005b96;
+}
+
+/* ------------------- RESPONSIVE ------------------- */
+
 @media(max-width:900px){
+
   .toolbar{
     flex-direction:column;
     align-items:stretch;
@@ -237,4 +292,5 @@
   .mainLayout{
     grid-template-columns:1fr;
   }
+
 }
