@@ -6,7 +6,7 @@ export default function SummaryTable({ data }) {
           <tr>
             <th>Malzeme</th>
             <th>Tip</th>
-            <th>Toplam İş Emri</th>
+            <th>İş Emri</th>
             <th>Stok</th>
             <th>3 Gün İhtiyaç</th>
             <th>Sonuç</th>
@@ -14,26 +14,34 @@ export default function SummaryTable({ data }) {
         </thead>
 
         <tbody>
-          {data.map((item) => (
-            <tr key={item.material}>
-              <td>
-                <div className="materialCode">{item.material}</div>
-                <div className="materialName">{item.name}</div>
-              </td>
-
-              <td>{item.type}</td>
-
-              <td>{item.jobCount}</td>
-
-              <td>{item.stock.toLocaleString("tr-TR")} M²</td>
-
-              <td>{item.need.toLocaleString("tr-TR")} M²</td>
-
-              <td className={item.result >= 0 ? "greenText" : "redText"}>
-                {item.result.toLocaleString("tr-TR")} M²
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan="6" style={{ textAlign: "center", padding: "30px" }}>
+                Veri bulunamadı.
               </td>
             </tr>
-          ))}
+          ) : (
+            data.map((item) => (
+              <tr key={item.material}>
+                <td>
+                  <div className="materialCode">{item.material}</div>
+                  <div className="materialName">{item.name}</div>
+                </td>
+
+                <td>{item.type}</td>
+
+                <td>{item.jobCount}</td>
+
+                <td>{Number(item.stock).toLocaleString("tr-TR")}</td>
+
+                <td>{Number(item.need).toLocaleString("tr-TR")}</td>
+
+                <td className={item.result >= 0 ? "greenText" : "redText"}>
+                  {Number(item.result).toLocaleString("tr-TR")}
+                </td>
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

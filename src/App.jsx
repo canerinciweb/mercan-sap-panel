@@ -81,25 +81,38 @@ const [summaryMode, setSummaryMode] = useState(false);
   const map = {};
 
   filtered.forEach((item) => {
-    if (!map[item.material]) {
-      map[item.material] = {
+    const key = item.material;
+
+    if (!map[key]) {
+      map[key] = {
         material: item.material,
         name: item.name,
         type: item.type,
-        stock: item.stock,
+        stock: Number(item.stock) || 0,
         need: 0,
         jobCount: 0,
       };
     }
 
-    map[item.material].need += item.need;
-    map[item.material].jobCount += item.jobOrders.length;
+    map[key].need += Number(item.need) || 0;
+
+    if (Array.isArray(item.jobOrders)) {
+      map[key].jobCount += item.jobOrders.length;
+    } else if (typeof item.jobOrders === "string") {
+      map[key].jobCount += item.jobOrders
+        .split("\n")
+        .filter(Boolean).length;
+    } else {
+      map[key].jobCount += 1;
+    }
   });
 
-  return Object.values(map).map((x) => ({
-    ...x,
-    result: x.stock - x.need,
-  }));
+  return Object.values(map)
+    .map((x) => ({
+      ...x,
+      result: x.stock - x.need,
+    }))
+    .sort((a, b) => a.material.localeCompare(b.material));
 }, [filtered]);
 
   if (search.trim()) {
