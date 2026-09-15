@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import "./App.css";
+import { exportStockExcel } from "./utils/exportExcel";
 import Header from "./components/Header";
 import Toolbar from "./components/Toolbar";
 import UploadPanel from "./components/UploadPanel";
@@ -108,12 +109,13 @@ export default function App() {
     <div className="app">
       <Header />
 
-      <Toolbar
-        category={category}
-        setCategory={setCategory}
-        search={search}
-        setSearch={setSearch}
-      />
+     <Toolbar
+  category={category}
+  setCategory={setCategory}
+  search={search}
+  setSearch={setSearch}
+  onExport={() => exportStockExcel(filtered)}
+/>
 
       <UploadPanel
         handleZparti={handleZparti}

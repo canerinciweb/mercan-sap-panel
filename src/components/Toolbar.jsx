@@ -3,19 +3,16 @@ export default function Toolbar({
   setCategory,
   search,
   setSearch,
+  onExport,
 }) {
-  const buttons = ["Her İkisi", "Hammadde", "Silikon"];
-
   return (
     <div className="toolbar">
       <div className="filters">
-        {buttons.map((item) => (
+        {["Her İkisi", "Hammadde", "Silikon"].map((item) => (
           <button
             key={item}
             className={
-              category === item
-                ? "filterButton active"
-                : "filterButton"
+              category === item ? "filterButton active" : "filterButton"
             }
             onClick={() => setCategory(item)}
           >
@@ -24,13 +21,18 @@ export default function Toolbar({
         ))}
       </div>
 
-      <input
-        className="searchInput"
-        type="text"
-        placeholder="Kod, malzeme veya hat ara..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="toolbarRight">
+        <input
+          className="searchInput"
+          placeholder="Kod, malzeme veya hat ara..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <button className="exportButton" onClick={onExport}>
+          Excel İndir
+        </button>
+      </div>
     </div>
   );
 }
