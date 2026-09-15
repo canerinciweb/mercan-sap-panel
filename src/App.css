@@ -63,6 +63,14 @@
   border-color:#005b96;
 }
 
+/* Sağ taraf */
+
+.toolbarRight{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
 .searchInput{
   width:320px;
   height:42px;
@@ -76,6 +84,52 @@
 
 .searchInput::placeholder{
   color:#94a3b8;
+}
+
+/* Excel Butonu */
+
+.exportButton{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+
+  height:42px;
+  min-width:140px;
+  padding:0 16px;
+
+  border:none;
+  border-radius:8px;
+
+  background:#107C41;
+  color:#fff;
+
+  font-size:10px;
+  font-weight:700;
+
+  cursor:pointer;
+  transition:.2s;
+
+  box-shadow:0 2px 6px rgba(16,124,65,.30);
+
+  appearance:none;
+  -webkit-appearance:none;
+}
+
+.exportButton:hover{
+  background:#0B6A37;
+  transform:translateY(-1px);
+  box-shadow:0 4px 10px rgba(16,124,65,.35);
+}
+
+.exportButton:active{
+  transform:translateY(0);
+}
+
+.excelIcon{
+  width:16px;
+  height:16px;
+  flex-shrink:0;
 }
 
 /* ===========================
@@ -146,23 +200,13 @@
   box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
-.card small{
-  font-size:10px;
-  color:#64748b;
-}
-
 .card h2{
   margin-top:12px;
   font-size:28px;
   color:#005b96;
 }
-/* ===========================
-   CARD CHECKBOX
-=========================== */
 
-/* ===========================
-   CARD CHECKBOX
-=========================== */
+/* Checkbox */
 
 .cardTitle{
   display:flex;
@@ -344,71 +388,25 @@
 /* ===========================
    RESPONSIVE
 =========================== */
-@media(max-width:900px){
 
-  .toolbarRight{
-    width:100%;
-    flex-direction:column;
-    align-items:stretch;
-  }
-
-  .exportButton{
-    width:100%;
-  }
-}
 @media(max-width:900px){
 
   .toolbar{
     flex-direction:column;
     align-items:stretch;
   }
+
   .toolbarRight{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.exportButton{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-
-  height:42px;
-  min-width:135px;
-  padding:0 16px;
-
-  background:#107C41;
-  color:#fff;
-
-  border:none;
-  border-radius:8px;
-
-  font-size:10px;
-  font-weight:700;
-
-  cursor:pointer;
-  transition:0.2s;
-  box-shadow:0 2px 6px rgba(16,124,65,.25);
-}
-
-.exportButton:hover{
-  background:#0B6A37;
-  transform:translateY(-1px);
-  box-shadow:0 4px 10px rgba(16,124,65,.35);
-}
-
-.exportButton:active{
-  transform:translateY(0);
-}
-
-.excelIcon{
-  width:16px;
-  height:16px;
-  flex-shrink:0;
-}
+    width:100%;
+    flex-direction:column;
+    align-items:stretch;
+  }
 
   .searchInput{
+    width:100%;
+  }
+
+  .exportButton{
     width:100%;
   }
 
