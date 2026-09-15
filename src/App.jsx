@@ -51,6 +51,7 @@ export default function App() {
     zpp.forEach((row) => {
       const machine = (row.machine || "").trim();
       if (!machine) return;
+
       counts[machine] = (counts[machine] || 0) + 1;
     });
 
@@ -76,7 +77,10 @@ export default function App() {
 
     if (selectedMachine !== "Tümü") {
       data = data.filter((x) =>
-        x.machines.split(", ").map((m) => m.trim()).includes(selectedMachine)
+        x.machines
+          .split(",")
+          .map((m) => m.trim())
+          .includes(selectedMachine)
       );
     }
 
@@ -180,6 +184,7 @@ export default function App() {
             />
             <span>3 Günlük Malzeme</span>
           </label>
+
           <h2>{merged.length}</h2>
         </div>
 
@@ -198,6 +203,7 @@ export default function App() {
             />
             <span>Depoya Gönder</span>
           </label>
+
           <h2>{merged.filter((x) => x.action === "Depoya Gönder").length}</h2>
         </div>
 
@@ -216,25 +222,24 @@ export default function App() {
             />
             <span>Kritik</span>
           </label>
+
           <h2>{merged.filter((x) => x.action === "Kritik").length}</h2>
         </div>
       </div>
 
-      {summaryMode ? (
-        <div style={{ padding: "18px" }}>
-          <SummaryTable data={summaryData} />
-        </div>
-      ) : (
-        <div className="mainLayout">
-          <MachinePanel
-            machines={machines}
-            selectedMachine={selectedMachine}
-            setSelectedMachine={setSelectedMachine}
-          />
+      <div className="mainLayout">
+        <MachinePanel
+          machines={machines}
+          selectedMachine={selectedMachine}
+          setSelectedMachine={setSelectedMachine}
+        />
 
+        {summaryMode ? (
+          <SummaryTable data={summaryData} />
+        ) : (
           <StockTable data={filtered} />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
