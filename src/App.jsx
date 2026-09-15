@@ -45,28 +45,8 @@ export default function App() {
 
   const merged = useMemo(() => mergeData(zparti, zpp), [zparti, zpp]);
 
-  const machines = useMemo(() => {
-    const counts = {};
-
-    zpp.forEach((row) => {
-      const machine = (row.machine || "").trim();
-      if (!machine) return;
-
-      counts[machine] = (counts[machine] || 0) + 1;
-    });
-
-    return [
-      { name: "Tümü", count: merged.length },
-      ...Object.keys(counts)
-        .sort((a, b) => a.localeCompare(b, "tr"))
-        .map((name) => ({
-          name,
-          count: counts[name],
-        })),
-    ];
-  }, [zpp, merged]);
-
-  const filtered = useMemo(() => {
+  /* ---------- Hat filtresi uygulanmadan önceki veri ---------- */
+  const filteredBase = useMemo(() => {
     let data = [...merged];
 
     if (category === "Hammadde")
@@ -74,15 +54,6 @@ export default function App() {
 
     if (category === "Silikon")
       data = data.filter((x) => x.type === "Silikon");
-
-    if (selectedMachine !== "Tümü") {
-      data = data.filter((x) =>
-        x.machines
-          .split(",")
-          .map((m) => m.trim())
-          .includes(selectedMachine)
-      );
-    }
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -104,8 +75,46 @@ export default function App() {
     }
 
     return data;
-  }, [merged, category, search, selectedMachine, cardFilter]);
+  }, [merged, category, search, cardFilter]);
 
+  /* ---------- Hatlar paneli artık ekrandaki veriye göre ---------- */
+  const machines = useMemo(() => {
+    const counts = {};
+
+    filteredBase.forEach((item) => {
+      item.machines
+        .split(",")
+        .map((m) => m.trim())
+        .filter(Boolean)
+        .forEach((machine) => {
+          counts[machine] = (counts[machine] || 0) + 1;
+        });
+    });
+
+    return [
+      { name: "Tümü", count: filteredBase.length },
+      ...Object.keys(counts)
+        .sort((a, b) => a.localeCompare(b, "tr"))
+        .map((name) => ({
+          name,
+          count: counts[name],
+        })),
+    ];
+  }, [filteredBase]);
+
+  /* ---------- Hat seçimi ---------- */
+  const filtered = useMemo(() => {
+    if (selectedMachine === "Tümü") return filteredBase;
+
+    return filteredBase.filter((x) =>
+      x.machines
+        .split(",")
+        .map((m) => m.trim())
+        .includes(selectedMachine)
+    );
+  }, [filteredBase, selectedMachine]);
+
+  /* ---------- Özet Tablosu ---------- */
   const summaryData = useMemo(() => {
     const map = {};
 
@@ -144,15 +153,16 @@ export default function App() {
       <Header />
 
       <Toolbar
-  category={category}
-  setCategory={setCategory}
-  search={search}
-  setSearch={setSearch}
-  onExport={() => exportStockExcel(filtered)}
-  summaryMode={summaryMode}
-  setSummaryMode={setSummaryMode}
-/>
-            <UploadPanel
+        category={category}
+        setCategory={setCategory}
+        search={search}
+        setSearch={setSearch}
+        onExport={() => exportStockExcel(filtered)}
+        summaryMode={summaryMode}
+        setSummaryMode={setSummaryMode}
+      />
+
+      <UploadPanel
         handleZparti={handleZparti}
         handleZpp={handleZpp}
         zpartiName={zpartiName}
