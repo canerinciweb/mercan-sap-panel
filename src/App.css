@@ -419,3 +419,29 @@
   }
 
 }
+/* ===========================
+   ÖZET BUTONU
+=========================== */
+
+.summaryButton{
+  height:40px;
+  min-width:120px;
+  padding:0 18px;
+  border:none;
+  border-radius:8px;
+  background:#005b96;
+  color:#fff;
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+  box-shadow:0 2px 6px rgba(0,91,150,.25);
+}
+
+.summaryButton:hover{
+  background:#004b7d;
+}
+
+.summaryButton.active{
+  background:#0f9d58;
+}

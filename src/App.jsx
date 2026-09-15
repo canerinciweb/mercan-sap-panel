@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import "./App.css";
 import { exportStockExcel } from "./utils/exportExcel";
+import SummaryTable from "./components/SummaryTable";
 import Header from "./components/Header";
 import Toolbar from "./components/Toolbar";
 import UploadPanel from "./components/UploadPanel";
@@ -15,7 +16,7 @@ export default function App() {
   const [category, setCategory] = useState("Her İkisi");
   const [search, setSearch] = useState("");
   const [selectedMachine, setSelectedMachine] = useState("Tümü");
-
+const [summaryMode, setSummaryMode] = useState(false);
   const [zparti, setZparti] = useState([]);
   const [zpp, setZpp] = useState([]);
 
@@ -76,6 +77,30 @@ export default function App() {
       x.machines.split(", ").map((m) => m.trim()).includes(selectedMachine)
     );
   }
+  const summaryData = useMemo(() => {
+  const map = {};
+
+  filtered.forEach((item) => {
+    if (!map[item.material]) {
+      map[item.material] = {
+        material: item.material,
+        name: item.name,
+        type: item.type,
+        stock: item.stock,
+        need: 0,
+        jobCount: 0,
+      };
+    }
+
+    map[item.material].need += item.need;
+    map[item.material].jobCount += item.jobOrders.length;
+  });
+
+  return Object.values(map).map((x) => ({
+    ...x,
+    result: x.stock - x.need,
+  }));
+}, [filtered]);
 
   if (search.trim()) {
     const q = search.toLowerCase();
@@ -116,7 +141,14 @@ export default function App() {
   setSearch={setSearch}
   onExport={() => exportStockExcel(filtered)}
 />
-
+<div style={{ padding: "0 18px 18px" }}>
+  <button
+    className={summaryMode ? "summaryButton active" : "summaryButton"}
+    onClick={() => setSummaryMode(!summaryMode)}
+  >
+    {summaryMode ? "Detay Görünüm" : "Özet"}
+  </button>
+</div>
       <UploadPanel
         handleZparti={handleZparti}
         handleZpp={handleZpp}
@@ -190,7 +222,11 @@ export default function App() {
           setSelectedMachine={setSelectedMachine}
         />
 
-        <StockTable data={filtered} />
+        {summaryMode ? (
+  <SummaryTable data={summaryData} />
+) : (
+  <StockTable data={filtered} />
+)}
       </div>
     </div>
   );
