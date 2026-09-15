@@ -76,10 +76,7 @@ export default function App() {
 
     if (selectedMachine !== "Tümü") {
       data = data.filter((x) =>
-        x.machines
-          .split(", ")
-          .map((m) => m.trim())
-          .includes(selectedMachine)
+        x.machines.split(", ").map((m) => m.trim()).includes(selectedMachine)
       );
     }
 
@@ -103,13 +100,7 @@ export default function App() {
     }
 
     return data;
-  }, [
-    merged,
-    category,
-    search,
-    selectedMachine,
-    cardFilter,
-  ]);
+  }, [merged, category, search, selectedMachine, cardFilter]);
 
   const summaryData = useMemo(() => {
     const map = {};
@@ -128,12 +119,11 @@ export default function App() {
 
       map[item.material].need += Number(item.need) || 0;
 
-      const orders = String(item.jobOrders || "")
+      String(item.jobOrders || "")
         .split(/\n|,/)
         .map((x) => x.trim())
-        .filter(Boolean);
-
-      orders.forEach((o) => map[item.material].jobs.add(o));
+        .filter(Boolean)
+        .forEach((o) => map[item.material].jobs.add(o));
     });
 
     return Object.values(map)
@@ -159,11 +149,7 @@ export default function App() {
 
       <div style={{ padding: "0 18px 18px" }}>
         <button
-          className={
-            summaryMode
-              ? "summaryButton active"
-              : "summaryButton"
-          }
+          className={summaryMode ? "exportButton" : "filterButton active"}
           onClick={() => setSummaryMode(!summaryMode)}
         >
           {summaryMode ? "Detay Görünüm" : "ÖZET"}
@@ -187,12 +173,8 @@ export default function App() {
                 setCardFilter((prev) => ({
                   ...prev,
                   threeDay: e.target.checked,
-                  depot: e.target.checked
-                    ? false
-                    : prev.depot,
-                  critical: e.target.checked
-                    ? false
-                    : prev.critical,
+                  depot: e.target.checked ? false : prev.depot,
+                  critical: e.target.checked ? false : prev.critical,
                 }))
               }
             />
@@ -210,21 +192,13 @@ export default function App() {
                 setCardFilter((prev) => ({
                   ...prev,
                   depot: e.target.checked,
-                  threeDay: e.target.checked
-                    ? false
-                    : prev.threeDay,
+                  threeDay: e.target.checked ? false : prev.threeDay,
                 }))
               }
             />
             <span>Depoya Gönder</span>
           </label>
-          <h2>
-            {
-              merged.filter(
-                (x) => x.action === "Depoya Gönder"
-              ).length
-            }
-          </h2>
+          <h2>{merged.filter((x) => x.action === "Depoya Gönder").length}</h2>
         </div>
 
         <div className="card">
@@ -236,36 +210,31 @@ export default function App() {
                 setCardFilter((prev) => ({
                   ...prev,
                   critical: e.target.checked,
-                  threeDay: e.target.checked
-                    ? false
-                    : prev.threeDay,
+                  threeDay: e.target.checked ? false : prev.threeDay,
                 }))
               }
             />
             <span>Kritik</span>
           </label>
-          <h2>
-            {
-              merged.filter((x) => x.action === "Kritik")
-                .length
-            }
-          </h2>
+          <h2>{merged.filter((x) => x.action === "Kritik").length}</h2>
         </div>
       </div>
 
-      <div className="mainLayout">
-        <MachinePanel
-          machines={machines}
-          selectedMachine={selectedMachine}
-          setSelectedMachine={setSelectedMachine}
-        />
-
-        {summaryMode ? (
+      {summaryMode ? (
+        <div style={{ padding: "18px" }}>
           <SummaryTable data={summaryData} />
-        ) : (
+        </div>
+      ) : (
+        <div className="mainLayout">
+          <MachinePanel
+            machines={machines}
+            selectedMachine={selectedMachine}
+            setSelectedMachine={setSelectedMachine}
+          />
+
           <StockTable data={filtered} />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
