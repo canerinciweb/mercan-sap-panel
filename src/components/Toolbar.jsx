@@ -30,8 +30,9 @@ export default function Toolbar({
         />
 
         <button className="exportButton" onClick={onExport}>
-          Excel İndir
-        </button>
+  <span className="excelIcon">📊</span>
+  <span>Excel İndir</span>
+</button>
       </div>
     </div>
   );

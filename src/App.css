@@ -365,7 +365,8 @@
   .toolbarRight{
   display:flex;
   align-items:center;
-  gap:10px;
+  gap:12px;
+
 }
 
 .exportButton{
@@ -381,8 +382,47 @@
   transition:.2s;
 }
 
+.exportButton{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
+  height:42px;
+  min-width:150px;
+  padding:0 18px;
+
+  border:none;
+  border-radius:8px;
+
+  background:linear-gradient(135deg,#1D6F42,#107C41);
+  color:#fff;
+
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.2px;
+
+  cursor:pointer;
+  transition:all .2s ease;
+
+  box-shadow:0 2px 6px rgba(16,124,65,.25);
+}
+
 .exportButton:hover{
-  background:#0b8649;
+  background:linear-gradient(135deg,#107C41,#0B5E33);
+  transform:translateY(-1px);
+  box-shadow:0 5px 12px rgba(16,124,65,.35);
+}
+
+.exportButton:active{
+  transform:translateY(0);
+  box-shadow:0 2px 6px rgba(16,124,65,.25);
+}
+
+.excelIcon{
+  font-size:15px;
+  display:flex;
+  align-items:center;
 }
 
   .searchInput{
