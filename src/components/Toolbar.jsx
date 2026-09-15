@@ -4,6 +4,8 @@ export default function Toolbar({
   search,
   setSearch,
   onExport,
+  summaryMode,
+  setSummaryMode,
 }) {
   return (
     <div className="toolbar">
@@ -12,9 +14,7 @@ export default function Toolbar({
           <button
             key={item}
             className={
-              category === item
-                ? "filterButton active"
-                : "filterButton"
+              category === item ? "filterButton active" : "filterButton"
             }
             onClick={() => setCategory(item)}
           >
@@ -32,9 +32,13 @@ export default function Toolbar({
         />
 
         <button
-          className="exportButton"
-          onClick={onExport}
+          className={summaryMode ? "filterButton active" : "filterButton"}
+          onClick={() => setSummaryMode(!summaryMode)}
         >
+          {summaryMode ? "Detay" : "ÖZET"}
+        </button>
+
+        <button className="exportButton" onClick={onExport}>
           📊 Excel
         </button>
       </div>

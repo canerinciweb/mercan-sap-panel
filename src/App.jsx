@@ -144,23 +144,15 @@ export default function App() {
       <Header />
 
       <Toolbar
-        category={category}
-        setCategory={setCategory}
-        search={search}
-        setSearch={setSearch}
-        onExport={() => exportStockExcel(filtered)}
-      />
-
-      <div style={{ padding: "0 18px 18px" }}>
-        <button
-          className={summaryMode ? "exportButton" : "filterButton active"}
-          onClick={() => setSummaryMode(!summaryMode)}
-        >
-          {summaryMode ? "Detay Görünüm" : "ÖZET"}
-        </button>
-      </div>
-
-      <UploadPanel
+  category={category}
+  setCategory={setCategory}
+  search={search}
+  setSearch={setSearch}
+  onExport={() => exportStockExcel(filtered)}
+  summaryMode={summaryMode}
+  setSummaryMode={setSummaryMode}
+/>
+            <UploadPanel
         handleZparti={handleZparti}
         handleZpp={handleZpp}
         zpartiName={zpartiName}
