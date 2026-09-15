@@ -45,7 +45,8 @@ export default function App() {
 
   const merged = useMemo(() => mergeData(zparti, zpp), [zparti, zpp]);
 
-  /* ---------- Hat filtresi uygulanmadan önceki veri ---------- */
+  /* ---------------- Hat filtresi öncesi ---------------- */
+
   const filteredBase = useMemo(() => {
     let data = [...merged];
 
@@ -77,7 +78,8 @@ export default function App() {
     return data;
   }, [merged, category, search, cardFilter]);
 
-  /* ---------- Hatlar paneli artık ekrandaki veriye göre ---------- */
+  /* ---------------- Hatlar ---------------- */
+
   const machines = useMemo(() => {
     const counts = {};
 
@@ -102,7 +104,8 @@ export default function App() {
     ];
   }, [filteredBase]);
 
-  /* ---------- Hat seçimi ---------- */
+  /* ---------------- Hat filtresi ---------------- */
+
   const filtered = useMemo(() => {
     if (selectedMachine === "Tümü") return filteredBase;
 
@@ -114,7 +117,8 @@ export default function App() {
     );
   }, [filteredBase, selectedMachine]);
 
-  /* ---------- Özet Tablosu ---------- */
+  /* ---------------- Özet ---------------- */
+
   const summaryData = useMemo(() => {
     const map = {};
 
@@ -144,6 +148,12 @@ export default function App() {
         ...x,
         jobCount: x.jobs.size,
         result: x.stock - x.need,
+        action:
+          x.stock - x.need < 0
+            ? "Kritik"
+            : x.stock - x.need > 0
+            ? "Depoya Gönder"
+            : "Kullanılacak",
       }))
       .sort((a, b) => a.material.localeCompare(b.material));
   }, [filtered]);
