@@ -1,27 +1,10 @@
 function parseSAPNumber(value) {
   if (value === "" || value === null || value === undefined) return 0;
-
   if (typeof value === "number") return value;
 
   let text = String(value).trim();
 
-  // 12.522,706 -> 12522.706
-  if (/^\d{1,3}(\.\d{3})+,\d+$/.test(text)) {
-    text = text.replace(/\./g, "").replace(",", ".");
-    return Number(text);
-  }
-
-  // 214.855 -> 214855
-  if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
-    text = text.replace(/\./g, "");
-    return Number(text);
-  }
-
-  // 214,855 -> 214.855
-  if (/^\d+,\d+$/.test(text)) {
-    text = text.replace(",", ".");
-    return Number(text);
-  }
+  text = text.replace(/\./g, "").replace(",", ".");
 
   return Number(text) || 0;
 }
@@ -31,9 +14,9 @@ export function parseZparti(rows) {
     .map((row) => ({
       material: String(row["Malzeme"] || "").trim(),
       name: row["Malzeme Adı"] || "",
-      stock: parseSAPNumber(row["Kullanılabilir M."]),
+      usable: parseSAPNumber(row["Uzunluk"]),
     }))
-    .filter((row) => row.material);
+    .filter((x) => x.material);
 }
 
 export function parseZpp(rows) {
@@ -48,13 +31,13 @@ export function parseZpp(rows) {
 
       return {
         machine,
-        jobOrder: String(row["MES İşEmri"] || "").trim(),
         material,
+        jobOrder: String(row["MES İşEmri"] || "").trim(),
         name: row["Mlz.Adı"] || "",
-        type: isRaw ? "Hammadde" : "Diger",
+        type: isRaw ? "Hammadde" : "Silikon",
         startDate: row["Pln.Bş.Ter"] || "",
-        need: parseSAPNumber(row["İhtiyaç miktarı"]),
+        need: parseSAPNumber(row["Pl.kalan miktar"]),
       };
     })
-    .filter((row) => row.machine && row.material);
+    .filter((x) => x.material);
 }

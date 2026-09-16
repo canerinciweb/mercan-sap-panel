@@ -19,10 +19,10 @@ export function mergeData(zparti, zpp) {
   const limit = new Date(today);
   limit.setDate(limit.getDate() + 3);
 
-  const stockMap = new Map();
+  const usableMap = new Map();
 
   zparti.forEach((item) => {
-    stockMap.set(item.material, item);
+    usableMap.set(item.material, item);
   });
 
   const grouped = new Map();
@@ -49,33 +49,56 @@ export function mergeData(zparti, zpp) {
 
     const current = grouped.get(item.material);
 
-    current.need += item.need;
+    current.need += Number(item.need || 0);
+
     current.machines.add(item.machine);
 
-    if (item.jobOrder) {
-      current.jobOrders.add(item.jobOrder);
-    }
+    if (item.jobOrder) current.jobOrders.add(item.jobOrder);
   });
 
-  return [...grouped.values()]
-    .map((item) => {
-      const stock = stockMap.get(item.material)?.stock || 0;
+  const result = [];
 
-      const remaining = stock - item.need;
+  grouped.forEach((item) => {
+    const usable = usableMap.get(item.material)?.usable || 0;
 
-      let action = "Kullanılacak";
+    const remaining = usable - item.need;
 
-      if (remaining < 0) action = "Kritik";
-      else if (remaining > item.need) action = "Depoya Gönder";
+    let action = "Kullanılacak";
 
-      return {
-        ...item,
-        stock,
-        remaining,
-        machines: [...item.machines].join(", "),
-        jobOrders: [...item.jobOrders].join(", "),
-        action,
-      };
-    })
-    .sort((a, b) => b.remaining - a.remaining);
+    if (remaining < 0) action = "Kritik";
+    else if (remaining > 0) action = "Depoya Gönder";
+
+    result.push({
+      material: item.material,
+      name: item.name,
+      type: item.type,
+      usable,
+      stock: usable,
+      need: item.need,
+      remaining,
+      machines: [...item.machines].join(", "),
+      jobOrders: [...item.jobOrders].join(", "),
+      action,
+    });
+
+    usableMap.delete(item.material);
+  });
+
+  // ZPARTİ'de olup ZPP'de olmayanlar
+  usableMap.forEach((item) => {
+    result.push({
+      material: item.material,
+      name: item.name,
+      type: "Silikon",
+      usable: item.usable,
+      stock: item.usable,
+      need: 0,
+      remaining: item.usable,
+      machines: "-",
+      jobOrders: "-",
+      action: "Depoya Gönder",
+    });
+  });
+
+  return result.sort((a, b) => b.remaining - a.remaining);
 }

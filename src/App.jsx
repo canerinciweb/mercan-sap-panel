@@ -33,19 +33,25 @@ export default function App() {
 
   async function handleZparti(file) {
     if (!file) return;
-    setZparti(parseZparti(await readExcel(file)));
+
+    const rows = await readExcel(file);
+    setZparti(parseZparti(rows));
     setZpartiName(file.name);
   }
 
   async function handleZpp(file) {
     if (!file) return;
-    setZpp(parseZpp(await readExcel(file)));
+
+    const rows = await readExcel(file);
+    setZpp(parseZpp(rows));
     setZppName(file.name);
   }
 
   const merged = useMemo(() => mergeData(zparti, zpp), [zparti, zpp]);
 
-  /* ---------------- Hat filtresi öncesi ---------------- */
+  /* ===========================
+     Hat filtresi öncesi
+  =========================== */
 
   const filteredBase = useMemo(() => {
     let data = [...merged];
@@ -53,8 +59,8 @@ export default function App() {
     if (category === "Hammadde")
       data = data.filter((x) => x.type === "Hammadde");
 
-    if (category === "Diger")
-      data = data.filter((x) => x.type === "Diger");
+    if (category === "Silikon")
+      data = data.filter((x) => x.type === "Silikon");
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -71,20 +77,21 @@ export default function App() {
     if (cardFilter.depot) active.push("Depoya Gönder");
     if (cardFilter.critical) active.push("Kritik");
 
-    if (active.length) {
+    if (active.length)
       data = data.filter((x) => active.includes(x.action));
-    }
 
     return data;
   }, [merged, category, search, cardFilter]);
 
-  /* ---------------- Hatlar ---------------- */
+  /* ===========================
+     Hat listesi
+  =========================== */
 
   const machines = useMemo(() => {
     const counts = {};
 
     filteredBase.forEach((item) => {
-      item.machines
+      (item.machines || "")
         .split(",")
         .map((m) => m.trim())
         .filter(Boolean)
@@ -94,7 +101,10 @@ export default function App() {
     });
 
     return [
-      { name: "Tümü", count: filteredBase.length },
+      {
+        name: "Tümü",
+        count: filteredBase.length,
+      },
       ...Object.keys(counts)
         .sort((a, b) => a.localeCompare(b, "tr"))
         .map((name) => ({
@@ -104,20 +114,24 @@ export default function App() {
     ];
   }, [filteredBase]);
 
-  /* ---------------- Hat filtresi ---------------- */
+  /* ===========================
+     Hat filtresi
+  =========================== */
 
   const filtered = useMemo(() => {
     if (selectedMachine === "Tümü") return filteredBase;
 
     return filteredBase.filter((x) =>
-      x.machines
+      (x.machines || "")
         .split(",")
         .map((m) => m.trim())
         .includes(selectedMachine)
     );
   }, [filteredBase, selectedMachine]);
 
-  /* ---------------- Özet ---------------- */
+  /* ===========================
+     Özet verisi
+  =========================== */
 
   const summaryData = useMemo(() => {
     const map = {};
@@ -128,13 +142,13 @@ export default function App() {
           material: item.material,
           name: item.name,
           type: item.type,
-          stock: Number(item.stock) || 0,
+          usable: Number(item.usable || item.stock) || 0,
           need: 0,
           jobs: new Set(),
         };
       }
 
-      map[item.material].need += Number(item.need) || 0;
+      map[item.material].need += Number(item.need || 0);
 
       String(item.jobOrders || "")
         .split(/\n|,/)
@@ -144,17 +158,23 @@ export default function App() {
     });
 
     return Object.values(map)
-      .map((x) => ({
-        ...x,
-        jobCount: x.jobs.size,
-        result: x.stock - x.need,
-        action:
-          x.stock - x.need < 0
-            ? "Kritik"
-            : x.stock - x.need > 0
-            ? "Depoya Gönder"
-            : "Kullanılacak",
-      }))
+      .map((x) => {
+        const result = x.usable - x.need;
+
+        return {
+          ...x,
+          jobCount: x.jobs.size,
+          result,
+          action:
+            x.need === 0
+              ? "Depoya Gönder"
+              : result < 0
+              ? "Kritik"
+              : result > 0
+              ? "Depoya Gönder"
+              : "Kullanılacak",
+        };
+      })
       .sort((a, b) => a.material.localeCompare(b.material));
   }, [filtered]);
 
@@ -240,11 +260,13 @@ export default function App() {
       </div>
 
       <div className="mainLayout">
-        <MachinePanel
-          machines={machines}
-          selectedMachine={selectedMachine}
-          setSelectedMachine={setSelectedMachine}
-        />
+        {!summaryMode && (
+          <MachinePanel
+            machines={machines}
+            selectedMachine={selectedMachine}
+            setSelectedMachine={setSelectedMachine}
+          />
+        )}
 
         {summaryMode ? (
           <SummaryTable data={summaryData} />

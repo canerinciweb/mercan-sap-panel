@@ -1,4 +1,10 @@
 export default function SummaryTable({ data }) {
+  const format = (v) =>
+    Number(v || 0).toLocaleString("tr-TR", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3,
+    });
+
   return (
     <div className="stockTable">
       <table>
@@ -7,8 +13,8 @@ export default function SummaryTable({ data }) {
             <th>Malzeme</th>
             <th>Tip</th>
             <th>İş Emri</th>
-            <th>Stok</th>
-            <th>3 Gün İhtiyaç</th>
+            <th>Kullanılabilir</th>
+            <th>PL Kalan</th>
             <th>Sonuç</th>
             <th>Durum</th>
           </tr>
@@ -26,12 +32,12 @@ export default function SummaryTable({ data }) {
 
               <td>{item.jobCount}</td>
 
-              <td>{item.stock.toLocaleString("tr-TR")} M²</td>
+              <td>{format(item.usable)} M²</td>
 
-              <td>{item.need.toLocaleString("tr-TR")} M²</td>
+              <td>{format(item.need)} M²</td>
 
               <td className={item.result < 0 ? "redText" : "greenText"}>
-                {item.result.toLocaleString("tr-TR")} M²
+                {format(item.result)} M²
               </td>
 
               <td>
