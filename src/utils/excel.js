@@ -5,15 +5,14 @@ export async function readExcel(file) {
 
   const workbook = XLSX.read(buffer, {
     type: "array",
-    cellText: true,   // Hücrede görünen metni al
+    cellText: true,
     cellNF: true,
-    cellDates: true,
   });
 
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
   return XLSX.utils.sheet_to_json(sheet, {
-    raw: false,        // Excel'de görünen formatı koru
+    raw: false,   // görünen metni al
     defval: "",
   });
 }

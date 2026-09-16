@@ -3,8 +3,11 @@ function parseSAPNumber(value) {
 
   let text = String(value).trim();
 
-  // SAP: 12.522,706
-  if (text.includes(",") && text.includes(".")) {
+  // Boşsa
+  if (!text) return 0;
+
+  // SAP: 12.522,706 -> 12522.706
+  if (/^\d{1,3}(\.\d{3})+,\d+$/.test(text)) {
     return Number(text.replace(/\./g, "").replace(",", "."));
   }
 
@@ -13,8 +16,8 @@ function parseSAPNumber(value) {
     return Number(text.replace(/\./g, ""));
   }
 
-  // 214,855 -> 214.855
-  if (text.includes(",")) {
+  // SAP: 25,3 -> 25.3
+  if (/^\d+,\d+$/.test(text)) {
     return Number(text.replace(",", "."));
   }
 
@@ -27,10 +30,10 @@ export function parseZparti(rows) {
       material: String(row["Malzeme"] || "").trim(),
       name: row["Malzeme Adı"] || "",
 
-      // Yeni mantık: Uzunluk kullanılabilir metraj
+      // ZPARTİ → Uzunluk
       usable: parseSAPNumber(row["Uzunluk"]),
 
-      // Eski kodlarla uyumluluk için
+      // Eski kodlarla uyumluluk
       stock: parseSAPNumber(row["Uzunluk"]),
     }))
     .filter((row) => row.material);
@@ -54,7 +57,7 @@ export function parseZpp(rows) {
         type: isRaw ? "Hammadde" : "Silikon",
         startDate: row["Pln.Bş.Ter"] || "",
 
-        // Yeni mantık: PL Kalan Miktar
+        // ZPPSTOK → PL Kalan
         need: parseSAPNumber(row["Pl.kalan miktar"]),
       };
     })
