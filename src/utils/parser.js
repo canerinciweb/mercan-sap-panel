@@ -1,27 +1,23 @@
 function parseSAPNumber(value) {
   if (value === "" || value === null || value === undefined) return 0;
 
-  // Excel sayıyı zaten number olarak veriyorsa aynen kullan
-  if (typeof value === "number") return value;
-
   let text = String(value).trim();
 
-  // 12.522,706 -> 12522.706
-  if (/^\d{1,3}(\.\d{3})+,\d+$/.test(text)) {
+  // SAP: 12.522,706
+  if (text.includes(",") && text.includes(".")) {
     return Number(text.replace(/\./g, "").replace(",", "."));
   }
 
-  // 12.040 -> 12040
+  // SAP: 12.040 -> 12040
   if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
     return Number(text.replace(/\./g, ""));
   }
 
   // 214,855 -> 214.855
-  if (/^\d+,\d+$/.test(text)) {
+  if (text.includes(",")) {
     return Number(text.replace(",", "."));
   }
 
-  // Normal sayı
   return Number(text) || 0;
 }
 
