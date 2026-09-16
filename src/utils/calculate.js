@@ -9,8 +9,8 @@ function parseDate(value) {
 
   const text = String(value).trim();
 
-  // DD.MM.YYYY
   const tr = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+
   if (tr) {
     return new Date(tr[3], tr[2] - 1, tr[1]);
   }
@@ -22,7 +22,9 @@ function parseDate(value) {
 export function mergeData(zparti, zpp) {
   const usableMap = new Map();
 
-  zparti.forEach((item) => usableMap.set(item.material, item));
+  zparti.forEach((item) => {
+    usableMap.set(item.material, item);
+  });
 
   const grouped = new Map();
 
@@ -32,7 +34,7 @@ export function mergeData(zparti, zpp) {
     if (!grouped.has(item.material)) {
       grouped.set(item.material, {
         material: item.material,
-        name: item.name,
+        name: item.name || "",
         type: item.type,
         need: 0,
         machines: new Set(),
@@ -48,10 +50,7 @@ export function mergeData(zparti, zpp) {
 
     if (item.jobOrder) current.jobOrders.add(item.jobOrder);
 
-    if (
-      start &&
-      (!current.earliestDate || start < current.earliestDate)
-    ) {
+    if (start && (!current.earliestDate || start < current.earliestDate)) {
       current.earliestDate = start;
     }
   });
@@ -59,7 +58,10 @@ export function mergeData(zparti, zpp) {
   const result = [];
 
   grouped.forEach((item) => {
-    const usable = usableMap.get(item.material)?.usable || 0;
+    const zpartiItem = usableMap.get(item.material);
+
+    const usable = Number(zpartiItem?.usable || 0);
+
     const remaining = usable - item.need;
 
     let action = "Kullanılacak";
@@ -70,15 +72,23 @@ export function mergeData(zparti, zpp) {
 
     result.push({
       material: item.material,
-      name: item.name,
+
+      // Malzeme adı ZPARTİ'den tamamlanıyor
+      name: zpartiItem?.name || item.name || "-",
+
       type: item.type,
+
       usable,
       stock: usable,
+
       need: item.need,
       remaining,
+
       machines: [...item.machines].join(", "),
       jobOrders: [...item.jobOrders].join(", "),
+
       startDate: item.earliestDate,
+
       action,
     });
 
@@ -88,7 +98,7 @@ export function mergeData(zparti, zpp) {
   usableMap.forEach((item) => {
     result.push({
       material: item.material,
-      name: item.name,
+      name: item.name || "-",
       type: "Silikon",
       usable: item.usable,
       stock: item.usable,
