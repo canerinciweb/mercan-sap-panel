@@ -25,11 +25,13 @@ export default function StockTable({ data }) {
           {data.map((item) => (
             <tr key={item.material}>
               <td>
-                <strong>{item.material}</strong>
-                <div className="sub">{item.name}</div>
+                <div className="materialCode">{item.material}</div>
+                <div className="materialName">{item.name}</div>
               </td>
 
-              <td className="sub">{item.jobOrders}</td>
+              <td style={{ maxWidth: "220px" }}>
+                <div className="jobOrders">{item.jobOrders || "-"}</div>
+              </td>
 
               <td>{item.type}</td>
 
@@ -39,22 +41,22 @@ export default function StockTable({ data }) {
 
               <td>{format(item.need)} M²</td>
 
-              <td className={item.remaining < 0 ? "redText" : "greenText"}>
+              <td className={item.remaining >= 0 ? "greenText" : "redText"}>
                 {format(item.remaining)} M²
               </td>
 
               <td>
-                <span
+                <button
                   className={
                     item.action === "Kritik"
-                      ? "status danger"
+                      ? "statusButton red"
                       : item.action === "Depoya Gönder"
-                      ? "status transfer"
-                      : "status success"
+                      ? "statusButton blue"
+                      : "statusButton green"
                   }
                 >
                   {item.action}
-                </span>
+                </button>
               </td>
             </tr>
           ))}

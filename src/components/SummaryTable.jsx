@@ -1,6 +1,6 @@
 export default function SummaryTable({ data }) {
-  const format = (v) =>
-    Number(v || 0).toLocaleString("tr-TR", {
+  const format = (value) =>
+    Number(value || 0).toLocaleString("tr-TR", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 3,
     });
@@ -36,7 +36,7 @@ export default function SummaryTable({ data }) {
 
               <td>{format(item.need)} M²</td>
 
-              <td className={item.result < 0 ? "redText" : "greenText"}>
+              <td className={item.result >= 0 ? "greenText" : "redText"}>
                 {format(item.result)} M²
               </td>
 
