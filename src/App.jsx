@@ -32,12 +32,16 @@ export default function App() {
   });
 
   async function handleZparti(file) {
-    if (!file) return;
+  if (!file) return;
 
-    const rows = await readExcel(file);
-    setZparti(parseZparti(rows));
-    setZpartiName(file.name);
-  }
+  const rows = await readExcel(file);
+
+  console.log("İlk satır Uzunluk:", rows[0]["Uzunluk"]);
+  console.log("Tipi:", typeof rows[0]["Uzunluk"]);
+
+  setZparti(parseZparti(rows));
+  setZpartiName(file.name);
+}
 
   async function handleZpp(file) {
     if (!file) return;

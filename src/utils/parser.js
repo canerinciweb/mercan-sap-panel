@@ -1,37 +1,22 @@
-function parseSAPNumber(value, isLength = false) {
-  if (value === "" || value === null || value === undefined) return 0;
+function parseSAPNumber(value) {
+  if (value === "" || value == null) return 0;
 
-  let text = String(value).trim();
-  if (!text) return 0;
+  if (typeof value === "number") {
+    return value;
+  }
 
-  // SAP: 12.522,706 -> 12522.706
-  if (/^\d{1,3}(\.\d{3})+,\d+$/.test(text)) {
+  const text = String(value).trim();
+
+  if (/^\d{1,3}(\.\d{3})+,\d+$/.test(text))
     return Number(text.replace(/\./g, "").replace(",", "."));
-  }
 
-  // SAP: 12.040 -> 12040
-  if (/^\d{1,3}(\.\d{3})+$/.test(text)) {
+  if (/^\d{1,3}(\.\d{3})+$/.test(text))
     return Number(text.replace(/\./g, ""));
-  }
 
-  // SAP: 25,3 -> 25.3
-  if (/^\d+,\d+$/.test(text)) {
+  if (/^\d+,\d+$/.test(text))
     return Number(text.replace(",", "."));
-  }
 
-  let num = Number(text);
-
-  // >>> ASIL DÜZELTME <<<
-  // Excel 12.040'ı 12.04 olarak okumuşsa geri çevir.
-  if (isLength && num > 0 && num < 1000 && text.includes(".")) {
-    const decimals = text.split(".")[1]?.length || 0;
-
-    if (decimals <= 2) {
-      num *= 1000;
-    }
-  }
-
-  return num || 0;
+  return Number(text) || 0;
 }
 
 export function parseZparti(rows) {
