@@ -3,7 +3,6 @@ function parseSAPNumber(value) {
 
   let text = String(value).trim();
 
-  // Boşsa
   if (!text) return 0;
 
   // SAP: 12.522,706 -> 12522.706
