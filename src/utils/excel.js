@@ -7,28 +7,35 @@ export async function readExcel(file) {
     type: "array",
     cellText: true,
     cellNF: true,
+    cellStyles: true,
+    cellDates: true,
   });
 
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const range = XLSX.utils.decode_range(sheet["!ref"]);
 
+  if (!sheet["!ref"]) return [];
+
+  const range = XLSX.utils.decode_range(sheet["!ref"]);
   const headers = [];
 
+  // Başlıkları oku
   for (let c = range.s.c; c <= range.e.c; c++) {
-    const addr = XLSX.utils.encode_cell({ r: 0, c });
-    headers.push(sheet[addr]?.w ?? sheet[addr]?.v ?? "");
+    const cell = sheet[XLSX.utils.encode_cell({ r: range.s.r, c })];
+    headers.push(String(cell?.w ?? cell?.v ?? "").trim());
   }
 
   const rows = [];
 
-  for (let r = 1; r <= range.e.r; r++) {
+  // Satırları oku (görünen değeri al)
+  for (let r = range.s.r + 1; r <= range.e.r; r++) {
     const obj = {};
 
     for (let c = range.s.c; c <= range.e.c; c++) {
-      const addr = XLSX.utils.encode_cell({ r, c });
-      const cell = sheet[addr];
+      const cell = sheet[XLSX.utils.encode_cell({ r, c })];
 
-      obj[headers[c]] = cell ? (cell.w ?? cell.v ?? "") : "";
+      obj[headers[c - range.s.c]] = cell
+        ? String(cell.w ?? cell.v ?? "").trim()
+        : "";
     }
 
     rows.push(obj);
