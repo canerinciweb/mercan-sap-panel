@@ -31,17 +31,33 @@ export default function App() {
     critical: false,
   });
 
+  /* ===========================
+     ZPARTİ YÜKLE
+  =========================== */
+
   async function handleZparti(file) {
-  if (!file) return;
+    if (!file) return;
 
-  const rows = await readExcel(file);
+    const rows = await readExcel(file);
 
-  console.log("İlk satır Uzunluk:", rows[0]["Uzunluk"]);
-  console.log("Tipi:", typeof rows[0]["Uzunluk"]);
+    // 441507502 satırını kontrol ediyoruz
+    const test = rows.find(
+      (r) => String(r["Malzeme"]).trim() === "441507502"
+    );
 
-  setZparti(parseZparti(rows));
-  setZpartiName(file.name);
-}
+    console.log("========== ZPARTİ TEST ==========");
+    console.log("Satır:", test);
+    console.log("Uzunluk:", test?.["Uzunluk"]);
+    console.log("Tip:", typeof test?.["Uzunluk"]);
+    console.log("=================================");
+
+    setZparti(parseZparti(rows));
+    setZpartiName(file.name);
+  }
+
+  /* ===========================
+     ZPP YÜKLE
+  =========================== */
 
   async function handleZpp(file) {
     if (!file) return;
@@ -105,10 +121,7 @@ export default function App() {
     });
 
     return [
-      {
-        name: "Tümü",
-        count: filteredBase.length,
-      },
+      { name: "Tümü", count: filteredBase.length },
       ...Object.keys(counts)
         .sort((a, b) => a.localeCompare(b, "tr"))
         .map((name) => ({
@@ -134,7 +147,7 @@ export default function App() {
   }, [filteredBase, selectedMachine]);
 
   /* ===========================
-     Özet verisi
+     Özet
   =========================== */
 
   const summaryData = useMemo(() => {
@@ -220,7 +233,6 @@ export default function App() {
             />
             <span>3 Günlük Malzeme</span>
           </label>
-
           <h2>{merged.length}</h2>
         </div>
 
@@ -239,7 +251,6 @@ export default function App() {
             />
             <span>Depoya Gönder</span>
           </label>
-
           <h2>{merged.filter((x) => x.action === "Depoya Gönder").length}</h2>
         </div>
 
@@ -258,7 +269,6 @@ export default function App() {
             />
             <span>Kritik</span>
           </label>
-
           <h2>{merged.filter((x) => x.action === "Kritik").length}</h2>
         </div>
       </div>
