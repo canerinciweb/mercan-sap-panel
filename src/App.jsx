@@ -53,8 +53,8 @@ export default function App() {
     if (category === "Hammadde")
       data = data.filter((x) => x.type === "Hammadde");
 
-    if (category === "Silikon")
-      data = data.filter((x) => x.type === "Silikon");
+    if (category === "Diger")
+      data = data.filter((x) => x.type === "Diger");
 
     if (search.trim()) {
       const q = search.toLowerCase();

@@ -51,7 +51,7 @@ export function parseZpp(rows) {
         jobOrder: String(row["MES İşEmri"] || "").trim(),
         material,
         name: row["Mlz.Adı"] || "",
-        type: isRaw ? "Hammadde" : "Silikon",
+        type: isRaw ? "Hammadde" : "Diger",
         startDate: row["Pln.Bş.Ter"] || "",
         need: parseSAPNumber(row["İhtiyaç miktarı"]),
       };

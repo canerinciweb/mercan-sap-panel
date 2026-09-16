@@ -10,7 +10,7 @@ export default function Toolbar({
   return (
     <div className="toolbar">
       <div className="filters">
-        {["Her İkisi", "Hammadde", "Silikon"].map((item) => (
+        {["Her İkisi", "Hammadde", "Diger"].map((item) => (
           <button
             key={item}
             className={
