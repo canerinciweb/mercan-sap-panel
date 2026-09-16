@@ -5,12 +5,18 @@ export default function SummaryTable({ data }) {
       maximumFractionDigits: 3,
     });
 
+  const formatDate = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("tr-TR");
+  };
+
   return (
     <div className="stockTable">
       <table>
         <thead>
           <tr>
             <th>Malzeme</th>
+            <th>Planlanan Başlangıç</th>
             <th>Tip</th>
             <th>İş Emri</th>
             <th>Kullanılabilir</th>
@@ -27,6 +33,8 @@ export default function SummaryTable({ data }) {
                 <div className="materialCode">{item.material}</div>
                 <div className="materialName">{item.name}</div>
               </td>
+
+              <td>{formatDate(item.startDate)}</td>
 
               <td>{item.type}</td>
 

@@ -5,6 +5,11 @@ export default function StockTable({ data }) {
       maximumFractionDigits: 3,
     });
 
+  const formatDate = (date) => {
+    if (!date) return "-";
+    return new Date(date).toLocaleDateString("tr-TR");
+  };
+
   return (
     <div className="tableWrap">
       <table className="stockTable">
@@ -12,6 +17,7 @@ export default function StockTable({ data }) {
           <tr>
             <th>Malzeme</th>
             <th>MES İşEmri</th>
+            <th>Planlanan Başlangıç</th>
             <th>Tip</th>
             <th>Hatlar</th>
             <th>Kullanılabilir</th>
@@ -29,9 +35,11 @@ export default function StockTable({ data }) {
                 <div className="materialName">{item.name}</div>
               </td>
 
-              <td style={{ maxWidth: "220px" }}>
-                <div className="jobOrders">{item.jobOrders || "-"}</div>
+              <td>
+                <div className="jobOrders">{item.jobOrders}</div>
               </td>
+
+              <td>{formatDate(item.startDate)}</td>
 
               <td>{item.type}</td>
 
