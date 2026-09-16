@@ -1,8 +1,7 @@
-function parseSAPNumber(value) {
+function parseSAPNumber(value, isLength = false) {
   if (value === "" || value === null || value === undefined) return 0;
 
   let text = String(value).trim();
-
   if (!text) return 0;
 
   // SAP: 12.522,706 -> 12522.706
@@ -20,7 +19,19 @@ function parseSAPNumber(value) {
     return Number(text.replace(",", "."));
   }
 
-  return Number(text) || 0;
+  let num = Number(text);
+
+  // >>> ASIL DÜZELTME <<<
+  // Excel 12.040'ı 12.04 olarak okumuşsa geri çevir.
+  if (isLength && num > 0 && num < 1000 && text.includes(".")) {
+    const decimals = text.split(".")[1]?.length || 0;
+
+    if (decimals <= 2) {
+      num *= 1000;
+    }
+  }
+
+  return num || 0;
 }
 
 export function parseZparti(rows) {
@@ -28,12 +39,8 @@ export function parseZparti(rows) {
     .map((row) => ({
       material: String(row["Malzeme"] || "").trim(),
       name: row["Malzeme Adı"] || "",
-
-      // ZPARTİ → Uzunluk
-      usable: parseSAPNumber(row["Uzunluk"]),
-
-      // Eski kodlarla uyumluluk
-      stock: parseSAPNumber(row["Uzunluk"]),
+      usable: parseSAPNumber(row["Uzunluk"], true),
+      stock: parseSAPNumber(row["Uzunluk"], true),
     }))
     .filter((row) => row.material);
 }
@@ -55,9 +62,7 @@ export function parseZpp(rows) {
         name: row["Kalem tipi tanımı"] || row["Mlz.Adı"] || "",
         type: isRaw ? "Hammadde" : "Silikon",
         startDate: row["Pln.Bş.Ter"] || "",
-
-        // ZPPSTOK → PL Kalan
-        need: parseSAPNumber(row["Pl.kalan miktar"]),
+        need: parseSAPNumber(row["Pl.kalan miktar"], true),
       };
     })
     .filter((row) => row.machine && row.material);
