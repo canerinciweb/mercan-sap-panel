@@ -1,36 +1,17 @@
-const format = (v, d = 1) =>
+import { DURUM } from "../utils/calculate";
+
+const format = (v, d = 2) =>
   Number(v || 0).toLocaleString("tr-TR", { maximumFractionDigits: d });
 
-const formatDate = (date) =>
-  date
-    ? new Date(date).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })
-    : "-";
-
-function buttonClass(item) {
-  if (item.action === "Kritik") return "statusButton red";
-  if (item.reason === "En uyumsuz") return "statusButton gray";
-  if (item.action === "Depoya Gönder") return "statusButton blue";
-  if (item.action === "Kısmi") return "statusButton amber";
-  return "statusButton green";
-}
-
-function planText(item) {
-  if (item.reason === "ZPARTİ'de yok")
-    return `İhtiyaç ${format(item.missing)}, ${formatDate(item.startDate)} ${item.machines}`;
-  if (item.missing > 0)
-    return `${format(item.missing)} eksik, ${formatDate(item.startDate)} ${item.machines}`;
-  if (item.need > 0) return `İlk: ${formatDate(item.startDate)} ${item.machines}`;
-  if (item.nextDate) return `Sonraki: ${formatDate(item.nextDate)}`;
-  return "Planda sonraki iş yok";
-}
+const STATUS_CLASS = {
+  [DURUM.DEPO]: "statusButton blue",
+  [DURUM.KULLANILMAYACAK]: "statusButton red",
+  [DURUM.KULLANILACAK]: "statusButton green",
+};
 
 export default function StockTable({ data }) {
   if (!data.length) {
-    return (
-      <div className="stockTable emptyTable">
-        Gösterilecek kayıt yok. ZPP022 ve ZPARTİ dosyalarını yükle ya da filtreleri değiştir.
-      </div>
-    );
+    return <div className="stockTable emptyTable">Bu filtrelerle eşleşen parti yok.</div>;
   }
 
   return (
@@ -42,35 +23,42 @@ export default function StockTable({ data }) {
             <th>Tip</th>
             <th>Parti</th>
             <th>Depo Yeri</th>
-            <th>Parti Eni</th>
-            <th>TopDlmEni</th>
-            <th>Uzunluk (m)</th>
-            <th>Kullanılabilir M.</th>
-            <th>Kullanılacak</th>
+            <th>Stok Tipi</th>
+            <th className="num">En (cm)</th>
+            <th className="num">TopDlmEni</th>
+            <th className="num">Uzunluk (m)</th>
+            <th className="num">Kullanılabilir (m²)</th>
+            <th className="num">Kullanılacak (m²)</th>
             <th>Durum</th>
-            <th>Plan</th>
+            <th>Açıklama</th>
           </tr>
         </thead>
 
         <tbody>
-          {data.map((item, i) => (
-            <tr key={`${item.material}-${item.parti}-${item.dilmeEni}-${i}`}>
+          {data.map((r) => (
+            <tr key={`${r.material}-${r.parti}`}>
               <td>
-                <div className="materialCode">{item.material}</div>
-                <div className="materialName">{item.name}</div>
+                <div className="materialCode">{r.material}</div>
+                <div className="materialName">{r.name}</div>
               </td>
-              <td>{item.type}</td>
-              <td>{item.parti}</td>
-              <td>{item.depo || "-"}</td>
-              <td>{item.en ? format(item.en, 0) : "-"}</td>
-              <td>{item.dilmeEni || "-"}</td>
-              <td>{item.uzunluk ? format(item.uzunluk) : "-"}</td>
-              <td>{item.usable ? format(item.usable) : "-"}</td>
-              <td>{item.used > 0 ? format(item.used) : "-"}</td>
+              <td>{r.type}</td>
+              <td>{r.parti || "-"}</td>
+              <td>{r.depo || "-"}</td>
+              <td>{r.stokTipi || "-"}</td>
+              <td className="num">{format(r.en, 1)}</td>
+              <td className="num">{r.dilmeEni || "-"}</td>
+              <td className="num">{format(r.uzunluk)}</td>
+              <td className="num">{format(r.miktar)}</td>
+              <td className="num">{r.used > 0 ? format(r.used) : "-"}</td>
               <td>
-                <button className={buttonClass(item)}>{item.reason || item.action}</button>
+                <span className={STATUS_CLASS[r.status]}>{r.status}</span>
               </td>
-              <td className="jobOrders">{planText(item)}</td>
+              <td className="reason">
+                {r.reason}
+                {r.machines && r.status !== DURUM.DEPO && (
+                  <div className="muted">Hat: {r.machines}</div>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

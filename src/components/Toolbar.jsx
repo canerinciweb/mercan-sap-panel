@@ -1,11 +1,19 @@
+import { KALEM_TIPLERI } from "../utils/parser";
+
+const CATEGORIES = ["Tümü", ...Object.values(KALEM_TIPLERI)];
+const QUICK_DAYS = [1, 2, 3, 5, 7];
+
 export default function Toolbar({
-  category, setCategory, search, setSearch, onExport,
-  summaryMode, setSummaryMode, days, setDays,
+  category, setCategory,
+  days, setDays,
+  search, setSearch,
+  view, setView,
+  onExport,
 }) {
   return (
     <div className="toolbar">
       <div className="filters">
-        {["Tümü", "Üst Kağıt", "Alt Kağıt", "Y.M. Üst", "Y.M. Alt"].map((item) => (
+        {CATEGORIES.map((item) => (
           <button
             key={item}
             className={category === item ? "filterButton active" : "filterButton"}
@@ -17,40 +25,49 @@ export default function Toolbar({
       </div>
 
       <div className="filters">
-        {[1, 2, 3, 5, 7].map((d) => (
+        {QUICK_DAYS.map((d) => (
           <button
             key={d}
-            className={days === d ? "filterButton active" : "filterButton"}
-            style={{ minWidth: 50 }}
+            className={days === d ? "filterButton small active" : "filterButton small"}
             onClick={() => setDays(d)}
           >
             {d} gün
           </button>
         ))}
-        <input
-          className="searchInput"
-          style={{ width: 70 }}
-          type="number"
-          min="1"
-          value={days}
-          onChange={(e) => setDays(Math.max(1, parseInt(e.target.value, 10) || 1))}
-        />
+
+        <label className="dayInput">
+          <input
+            type="number"
+            min="1"
+            max="60"
+            value={days}
+            onChange={(e) => {
+              const n = parseInt(e.target.value, 10);
+              if (!isNaN(n)) setDays(Math.min(60, Math.max(1, n)));
+            }}
+          />
+          gün
+        </label>
       </div>
 
       <div className="toolbarRight">
         <input
           className="searchInput"
-          placeholder="Malzeme, parti, depo yeri veya hat ara..."
+          placeholder="Malzeme, parti, depo veya hat ara..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+
         <button
-          className={summaryMode ? "filterButton active" : "filterButton"}
-          onClick={() => setSummaryMode(!summaryMode)}
+          className={view === "ihtiyac" ? "filterButton active" : "filterButton"}
+          onClick={() => setView(view === "ihtiyac" ? "parti" : "ihtiyac")}
         >
-          {summaryMode ? "Detay" : "ÖZET"}
+          {view === "ihtiyac" ? "Parti Listesi" : "İhtiyaç Özeti"}
         </button>
-        <button className="exportButton" onClick={onExport}>📊 Excel</button>
+
+        <button className="exportButton" onClick={onExport}>
+          📊 Excel
+        </button>
       </div>
     </div>
   );

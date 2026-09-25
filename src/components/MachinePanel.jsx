@@ -1,8 +1,4 @@
-export default function MachinePanel({
-  machines,
-  selectedMachine,
-  setSelectedMachine,
-}) {
+export default function MachinePanel({ machines, selectedMachine, setSelectedMachine }) {
   return (
     <div className="machinePanel">
       <h3>Hatlar</h3>
@@ -10,11 +6,7 @@ export default function MachinePanel({
       {machines.map((machine) => (
         <button
           key={machine.name}
-          className={
-            selectedMachine === machine.name
-              ? "machine active"
-              : "machine"
-          }
+          className={selectedMachine === machine.name ? "machine active" : "machine"}
           onClick={() => setSelectedMachine(machine.name)}
         >
           <span>{machine.name}</span>

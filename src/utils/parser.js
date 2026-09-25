@@ -1,34 +1,106 @@
-const TIPLER = {
+/* =========================================================
+   KOLON AYARLARI
+   col    : beklenen kolon harfi
+   header : o kolonda beklenen başlık
+   Başlık beklenen harfte değilse aynı başlık başka kolonda aranır,
+   bulunursa oradan okunur ve ekranda uyarı gösterilir.
+========================================================= */
+
+export const ZPP_COLS = {
+  isyeri:     { col: "B",  header: "İşyeri" },
+  isEmri:     { col: "D",  header: "MES İşEmri" },
+  bilesen:    { col: "J",  header: "Bileşen GK" },
+  bilesenAdi: { col: "K",  header: "Mlz.Adı" },
+  kalemTipi:  { col: "L",  header: "KlmTp" },
+  dilmeEni:   { col: "N",  header: "TopDlmEni" },
+  plKalan:    { col: "O",  header: "Pl.kalan miktar" },
+  basTarih:   { col: "AF", header: "Pln.Bş.Ter" },
+  basSaat:    { col: "AG", header: "PlnBaşSaat" },
+  bitTarih:   { col: "AI", header: "Pln.Bt.Ter" },
+  bitSaat:    { col: "AJ", header: "PlnBitSaat" },
+};
+
+export const ZPARTI_COLS = {
+  malzeme:        { col: "B", header: "Malzeme" },
+  malzemeAdi:     { col: "C", header: "Malzeme Adı" },
+  parti:          { col: "D", header: "Parti" },
+  kullanilabilir: { col: "F", header: "Kullanılabilir M." },
+  uzunluk:        { col: "G", header: "Uzunluk" },
+  en:             { col: "H", header: "En" },
+  depo:           { col: "N", header: "Depo" },
+  stokTipi:       { col: "Q", header: "StokTipi" },
+};
+
+/* ZPP022 L kolonu */
+export const KALEM_TIPLERI = {
   U: "Üst Kağıt",
   A: "Alt Kağıt",
   F: "Y.M. Üst",
   G: "Y.M. Alt",
 };
 
+/* ---------- Kolon çözümleme ---------- */
+
+const norm = (s) =>
+  String(s ?? "").toLocaleLowerCase("tr").replace(/\s+/g, "").replace(/\.+$/, "");
+
+function resolveColumns(headers, spec, fileLabel) {
+  const cols = {};
+  const warnings = [];
+
+  for (const [key, def] of Object.entries(spec)) {
+    if (norm(headers[def.col]) === norm(def.header)) {
+      cols[key] = def.col;
+      continue;
+    }
+
+    const found = Object.keys(headers).find((c) => norm(headers[c]) === norm(def.header));
+
+    if (found) {
+      cols[key] = found;
+      warnings.push(`${fileLabel}: "${def.header}" ${def.col} yerine ${found} kolonunda bulundu.`);
+    } else {
+      cols[key] = def.col;
+      warnings.push(
+        `${fileLabel}: ${def.col} kolonunda "${def.header}" bekleniyordu, "${headers[def.col] || "boş"}" bulundu.`
+      );
+    }
+  }
+
+  return { cols, warnings };
+}
+
+/* ---------- Değer dönüştürücüler ---------- */
+
 /* Ham sayı gelirse olduğu gibi, metin gelirse Türkçe format */
-function toNumber(value) {
+export function toNumber(value) {
   if (typeof value === "number") return Number.isFinite(value) ? value : 0;
 
   let t = String(value ?? "").trim().replace(/\s/g, "");
   if (!t) return 0;
 
-  if (t.includes(",")) t = t.replace(/\./g, "").replace(",", "."); // 12.522,706
-  else if (/^\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, ""); // 12.040
+  if (t.includes(",") && t.includes(".")) {
+    t = t.lastIndexOf(",") > t.lastIndexOf(".")
+      ? t.replace(/\./g, "").replace(",", ".")   // 12.522,706
+      : t.replace(/,/g, "");                      // 12,522.706
+  } else if (t.includes(",")) {
+    t = t.replace(",", ".");                      // 25,3
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(t)) {
+    t = t.replace(/\./g, "");                     // 12.040
+  }
 
   const n = Number(t);
   return Number.isFinite(n) ? n : 0;
 }
 
 /* "000000441507502" ile "441507502" aynı olsun */
-function normCode(value) {
+export function normCode(value) {
   const t =
     typeof value === "number" ? String(Math.round(value)) : String(value ?? "").trim();
   return /^\d+$/.test(t) ? t.replace(/^0+(?=\d)/, "") : t;
 }
 
 function toDate(value) {
-  if (value instanceof Date) return isNaN(value) ? null : value;
-
   if (typeof value === "number" && value > 0) {
     return new Date(1899, 11, 30 + Math.floor(value));
   }
@@ -49,88 +121,76 @@ function toSeconds(value) {
 
   const text = String(value ?? "").trim();
 
-  let m = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/); // 14:30 / 14:30:00
+  let m = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?/); // 14:00:18
   if (m) return +m[1] * 3600 + +m[2] * 60 + (+m[3] || 0);
 
-  m = text.match(/^(\d{2})(\d{2})(\d{2})$/); // 143000
+  m = text.match(/^(\d{2})(\d{2})(\d{2})$/); // 140018
   if (m) return +m[1] * 3600 + +m[2] * 60 + +m[3];
 
   return 0;
 }
 
-/* Başlık adına göre değer al (büyük/küçük harf ve boşluk farkını yok sayar) */
-const normKey = (k) => String(k).toLocaleLowerCase("tr").replace(/\s+/g, "").replace(/\.$/, "");
-
-function pick(row, names, fallbackCol) {
-  for (const name of names) {
-    if (row[name] !== undefined) return row[name];
-  }
-
-  const wanted = names.map(normKey);
-  for (const key of Object.keys(row)) {
-    if (wanted.includes(normKey(key))) return row[key];
-  }
-
-  return fallbackCol ? row[fallbackCol] : undefined;
-}
-
 function dateTime(dateValue, timeValue) {
   const d = toDate(dateValue);
   if (!d) return null;
-
-  const base = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  return new Date(base.getTime() + toSeconds(timeValue) * 1000);
+  return new Date(d.getTime() + toSeconds(timeValue) * 1000);
 }
 
-/* ===========================
-   ZPARTİ
-   Malzeme, Kullanılabilir M., D parti, G uzunluk, H en, N depo yeri
-=========================== */
-const KULLANILABILIR = ["Kullanılabilir M.", "Kullanılabilir M", "Kullanılabilir miktar", "Kullanılabilir"];
-
-export function parseZparti(rows) {
-  return rows
-    .map((row) => {
-      const uzunluk = toNumber(row["G"]);
-      const en = toNumber(row["H"]);
-      const kullanilabilir = pick(row, KULLANILABILIR);
-
-      return {
-        material: normCode(pick(row, ["Malzeme"], "B")),
-        name: String(pick(row, ["Malzeme Adı", "Malzeme kısa metni"]) ?? "").trim(),
-        parti: String(pick(row, ["Parti"], "D") ?? "").trim(),
-        depo: String(pick(row, ["Depo yeri"], "N") ?? "").trim(),
-        uzunluk,
-        en,
-        // Stok miktarı: Kullanılabilir M. kolonu (yoksa uzunluk x en)
-        alan: kullanilabilir !== undefined ? toNumber(kullanilabilir) : (uzunluk * en) / 1000,
-        hasKullanilabilir: kullanilabilir !== undefined,
-      };
-    })
-    .filter((r) => r.material);
-}
-
-/* ===========================
+/* =========================================================
    ZPP022
-   Bileşen GK, Pl.kalan miktar, L tip, TopDlmEni, AF+AG başlangıç, AI+AC bitiş
-=========================== */
-export function parseZpp(rows) {
-  return rows
-    .map((row) => {
-      const tip = String(row["L"] ?? "").trim().toUpperCase();
+========================================================= */
+export function parseZpp({ headers, rows }) {
+  const { cols, warnings } = resolveColumns(headers, ZPP_COLS, "ZPP022");
+  const get = (row, key) => row[cols[key]];
 
-      return {
-        tip,
-        type: TIPLER[tip] || "",
-        machine: String(pick(row, ["İşyeri", "İş yeri"]) ?? "").trim(),
-        jobOrder: String(pick(row, ["MES İşEmri", "MES İş Emri"]) ?? "").trim(),
-        material: normCode(pick(row, ["Bileşen GK", "Bileşen"])),
-        name: String(row["Mlz.Adı"] ?? "").trim(),
-        dilmeEni: toNumber(pick(row, ["TopDlmEni"], "N")),
-        need: toNumber(pick(row, ["Pl.kalan miktar", "Pl. kalan miktar", "PL kalan miktar"], "O")),
-        start: dateTime(row["AF"], row["AG"]),
-        end: dateTime(row["AI"], row["AC"]),
-      };
-    })
-    .filter((r) => TIPLER[r.tip] && r.material);
+  const items = [];
+  let skipped = 0;
+
+  rows.forEach((row) => {
+    const tip = String(get(row, "kalemTipi") ?? "").trim().toUpperCase();
+    const material = normCode(get(row, "bilesen"));
+
+    if (!KALEM_TIPLERI[tip] || !material) {
+      skipped++;
+      return;
+    }
+
+    items.push({
+      material,
+      name: String(get(row, "bilesenAdi") ?? "").trim(),
+      tip,
+      type: KALEM_TIPLERI[tip],
+      machine: String(get(row, "isyeri") ?? "").trim(),
+      jobOrder: String(get(row, "isEmri") ?? "").trim(),
+      dilmeEni: toNumber(get(row, "dilmeEni")),
+      plKalan: toNumber(get(row, "plKalan")),
+      start: dateTime(get(row, "basTarih"), get(row, "basSaat")),
+      end: dateTime(get(row, "bitTarih"), get(row, "bitSaat")),
+    });
+  });
+
+  return { items, warnings, total: rows.length, skipped };
+}
+
+/* =========================================================
+   ZPARTİ
+========================================================= */
+export function parseZparti({ headers, rows }) {
+  const { cols, warnings } = resolveColumns(headers, ZPARTI_COLS, "ZPARTİ");
+  const get = (row, key) => row[cols[key]];
+
+  const items = rows
+    .map((row) => ({
+      material: normCode(get(row, "malzeme")),
+      name: String(get(row, "malzemeAdi") ?? "").trim(),
+      parti: String(get(row, "parti") ?? "").trim(),
+      depo: String(get(row, "depo") ?? "").trim(),
+      stokTipi: String(get(row, "stokTipi") ?? "").trim(),
+      miktar: toNumber(get(row, "kullanilabilir")), // m²
+      uzunluk: toNumber(get(row, "uzunluk")),       // m
+      en: toNumber(get(row, "en")),                 // cm
+    }))
+    .filter((r) => r.material);
+
+  return { items, warnings, total: rows.length };
 }

@@ -1,14 +1,19 @@
-const format = (v, d = 1) =>
+const format = (v, d = 2) =>
   Number(v || 0).toLocaleString("tr-TR", { maximumFractionDigits: d });
 
-const formatDate = (date) =>
-  date
-    ? new Date(date).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })
-    : "-";
+const formatDate = (d) =>
+  d ? d.toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" }) : "-";
+
+const STATUS_CLASS = {
+  "Yeterli": "statusButton green",
+  "Eksik": "statusButton amber",
+  "Uygun parti yok": "statusButton red",
+  "Stokta yok": "statusButton gray",
+};
 
 export default function SummaryTable({ data }) {
   if (!data.length) {
-    return <div className="stockTable emptyTable">Gösterilecek kayıt yok.</div>;
+    return <div className="stockTable emptyTable">Seçilen sürede ihtiyaç yok.</div>;
   }
 
   return (
@@ -17,45 +22,42 @@ export default function SummaryTable({ data }) {
         <thead>
           <tr>
             <th>Malzeme</th>
-            <th>İlk Başlangıç</th>
             <th>Tip</th>
-            <th>İş Emri</th>
-            <th>Parti</th>
-            <th>Kullanılabilir M.</th>
-            <th>PL Kalan</th>
-            <th>Fark</th>
-            <th>Depoya Gidecek</th>
+            <th className="num">TopDlmEni</th>
+            <th>İlk Başlangıç</th>
+            <th>Hatlar</th>
+            <th className="num">İş Emri</th>
+            <th className="num">Pl. Kalan (m²)</th>
+            <th className="num">Uygun Stok (m²)</th>
+            <th className="num">Karşılanan (m²)</th>
+            <th className="num">Eksik (m²)</th>
             <th>Durum</th>
           </tr>
         </thead>
 
         <tbody>
-          {data.map((item) => (
-            <tr key={item.material}>
+          {data.map((r) => (
+            <tr key={`${r.material}-${r.dilmeEni}`}>
               <td>
-                <div className="materialCode">{item.material}</div>
-                <div className="materialName">{item.name}</div>
+                <div className="materialCode">{r.material}</div>
+                <div className="materialName">{r.name}</div>
               </td>
-              <td>{formatDate(item.startDate)}</td>
-              <td>{item.type}</td>
-              <td>{item.jobCount}</td>
-              <td>{item.partiCount}</td>
-              <td>{format(item.usable)}</td>
-              <td>{format(item.need)}</td>
-              <td className={item.result >= 0 ? "greenText" : "redText"}>{format(item.result)}</td>
-              <td>{item.depotArea > 0 ? format(item.depotArea) : "-"}</td>
+              <td>{r.type}</td>
+              <td className="num">{format(r.dilmeEni, 1)}</td>
+              <td>{formatDate(r.firstStart)}</td>
+              <td>{r.machines}</td>
+              <td className="num">{r.jobCount}</td>
+              <td className="num">{format(r.need)}</td>
+              <td className="num">
+                {format(r.fittingStock)}
+                <div className="muted">{r.fittingCount} parti</div>
+              </td>
+              <td className="num">{format(r.covered)}</td>
+              <td className={r.missing > 0 ? "num redText" : "num"}>
+                {r.missing > 0 ? format(r.missing) : "-"}
+              </td>
               <td>
-                <button
-                  className={
-                    item.action === "Kritik"
-                      ? "statusButton red"
-                      : item.action === "Depoya Gönder"
-                      ? "statusButton blue"
-                      : "statusButton green"
-                  }
-                >
-                  {item.action}
-                </button>
+                <span className={STATUS_CLASS[r.status]}>{r.status}</span>
               </td>
             </tr>
           ))}
