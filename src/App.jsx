@@ -179,4 +179,147 @@ export default function App() {
       if (item.action === "Depoya Gönder") m.depotArea += Number(item.usable || 0);
       if (item.action === "Kritik") m.hasCritical = true;
 
-      if (item.startDate && (!m.startDate ||
+      if (item.startDate && (!m.startDate || item.startDate < m.startDate)) {
+        m.startDate = item.startDate;
+      }
+
+      splitList(item.jobOrders).forEach((o) => m.jobs.add(o));
+    });
+
+    return Object.values(map)
+      .map((x) => ({
+        ...x,
+        jobCount: x.jobs.size,
+        result: x.usable - x.need,
+        action: x.hasCritical
+          ? "Kritik"
+          : x.need <= 0
+          ? "Depoya Gönder"
+          : "Kullanılacak",
+      }))
+      .sort((a, b) => a.material.localeCompare(b.material, "tr", { numeric: true }));
+  }, [filtered]);
+
+  /* ===========================
+     KART SAYILARI
+  =========================== */
+
+  const depotCount = merged.filter((x) => x.action === "Depoya Gönder").length;
+  const criticalCount = merged.filter((x) => x.action === "Kritik").length;
+
+  /* ===========================
+     EKRAN
+  =========================== */
+
+  return (
+    <div className="app">
+      <Header />
+
+      <Toolbar
+        category={category}
+        setCategory={setCategory}
+        search={search}
+        setSearch={setSearch}
+        onExport={() => exportStockExcel(filtered)}
+        summaryMode={summaryMode}
+        setSummaryMode={setSummaryMode}
+        days={days}
+        setDays={setDays}
+      />
+
+      <UploadPanel
+        handleZparti={handleZparti}
+        handleZpp={handleZpp}
+        zpartiName={zpartiName}
+        zppName={zppName}
+      />
+
+      {error && (
+        <div
+          style={{
+            margin: "0 18px",
+            padding: "10px 14px",
+            borderRadius: 8,
+            background: "#fbe4e4",
+            color: "#c42323",
+            fontWeight: 600,
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      <div className="cards">
+        <div className="card">
+          <label className="cardTitle">
+            <input
+              type="checkbox"
+              checked={cardFilter.all}
+              onChange={(e) =>
+                setCardFilter(
+                  e.target.checked
+                    ? { all: true, depot: false, critical: false }
+                    : (prev) => ({ ...prev, all: false })
+                )
+              }
+            />
+            <span>{days} Günlük Malzeme</span>
+          </label>
+          <h2>{merged.length}</h2>
+        </div>
+
+        <div className="card">
+          <label className="cardTitle">
+            <input
+              type="checkbox"
+              checked={cardFilter.depot}
+              onChange={(e) =>
+                setCardFilter((prev) => {
+                  const next = { ...prev, depot: e.target.checked };
+                  next.all = !next.depot && !next.critical;
+                  return next;
+                })
+              }
+            />
+            <span>Depoya Gönder</span>
+          </label>
+          <h2>{depotCount}</h2>
+        </div>
+
+        <div className="card">
+          <label className="cardTitle">
+            <input
+              type="checkbox"
+              checked={cardFilter.critical}
+              onChange={(e) =>
+                setCardFilter((prev) => {
+                  const next = { ...prev, critical: e.target.checked };
+                  next.all = !next.depot && !next.critical;
+                  return next;
+                })
+              }
+            />
+            <span>Kritik</span>
+          </label>
+          <h2>{criticalCount}</h2>
+        </div>
+      </div>
+
+      <div className={summaryMode ? "mainLayout single" : "mainLayout"}>
+        {!summaryMode && (
+          <MachinePanel
+            machines={machines}
+            selectedMachine={activeMachine}
+            setSelectedMachine={setSelectedMachine}
+          />
+        )}
+
+        {summaryMode ? (
+          <SummaryTable data={summaryData} />
+        ) : (
+          <StockTable data={filtered} />
+        )}
+      </div>
+    </div>
+  );
+}
