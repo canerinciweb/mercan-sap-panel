@@ -1,5 +1,5 @@
 const DAY = 86400000;
-const EPS = 0.01; // 0,01 m² altı farklar yok sayılır
+const EPS = 0.001; // çok küçük farklar yok sayılır
 
 /* ===========================
    DİLME ENİ TOLERANSI
@@ -165,9 +165,20 @@ export function mergeData(zparti, zpp, days, refDate = new Date()) {
       });
     });
 
-    /* ---------- 5) Karşılanamayan dilme enleri ---------- */
+    /* ---------- 5) Karşılanamayan ihtiyaçlar ----------
+       ZPARTİ'de hiç partisi olmayan malzeme -> Depoya Gönder
+       Partisi var ama yetmiyor / en uymuyor -> Kritik */
+    const inZparti = partiler.length > 0;
+
     groups.forEach((g) => {
       if (g.left <= EPS) return;
+
+      const action = inZparti ? "Kritik" : "Depoya Gönder";
+      const reason = !inZparti
+        ? "ZPARTİ'de yok"
+        : g.need - g.left > EPS
+        ? "Eksik miktar"
+        : "Uygun parti yok";
 
       result.push({
         material,
@@ -188,8 +199,8 @@ export function mergeData(zparti, zpp, days, refDate = new Date()) {
         jobOrders: join(g.jobOrders),
         startDate: g.firstStart,
         nextDate: m.nextStart,
-        action: "Kritik",
-        reason: g.need - g.left > EPS ? "Eksik metraj" : "Uygun parti yok",
+        action,
+        reason,
       });
     });
   });

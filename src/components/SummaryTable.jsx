@@ -1,14 +1,15 @@
-export default function SummaryTable({ data }) {
-  const format = (value) =>
-    Number(value || 0).toLocaleString("tr-TR", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
+const format = (v, d = 1) =>
+  Number(v || 0).toLocaleString("tr-TR", { maximumFractionDigits: d });
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("tr-TR");
-  };
+const formatDate = (date) =>
+  date
+    ? new Date(date).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" })
+    : "-";
+
+export default function SummaryTable({ data }) {
+  if (!data.length) {
+    return <div className="stockTable emptyTable">Gösterilecek kayıt yok.</div>;
+  }
 
   return (
     <div className="stockTable">
@@ -16,12 +17,14 @@ export default function SummaryTable({ data }) {
         <thead>
           <tr>
             <th>Malzeme</th>
-            <th>Planlanan Başlangıç</th>
+            <th>İlk Başlangıç</th>
             <th>Tip</th>
             <th>İş Emri</th>
-            <th>Kullanılabilir</th>
+            <th>Parti</th>
+            <th>Kullanılabilir M.</th>
             <th>PL Kalan</th>
-            <th>Sonuç</th>
+            <th>Fark</th>
+            <th>Depoya Gidecek</th>
             <th>Durum</th>
           </tr>
         </thead>
@@ -33,21 +36,14 @@ export default function SummaryTable({ data }) {
                 <div className="materialCode">{item.material}</div>
                 <div className="materialName">{item.name}</div>
               </td>
-
               <td>{formatDate(item.startDate)}</td>
-
               <td>{item.type}</td>
-
               <td>{item.jobCount}</td>
-
-              <td>{format(item.usable)} M²</td>
-
-              <td>{format(item.need)} M²</td>
-
-              <td className={item.result >= 0 ? "greenText" : "redText"}>
-                {format(item.result)} M²
-              </td>
-
+              <td>{item.partiCount}</td>
+              <td>{format(item.usable)}</td>
+              <td>{format(item.need)}</td>
+              <td className={item.result >= 0 ? "greenText" : "redText"}>{format(item.result)}</td>
+              <td>{item.depotArea > 0 ? format(item.depotArea) : "-"}</td>
               <td>
                 <button
                   className={

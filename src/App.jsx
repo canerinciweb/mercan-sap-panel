@@ -89,11 +89,11 @@ export default function App() {
     let data = merged;
 
     if (category !== "Tümü") {
-      data = data.filter((x) => x.type.includes(category));
+      data = data.filter((x) => String(x.type || "").includes(category));
     }
 
     if (search.trim()) {
-      const q = search.toLocaleLowerCase("tr");
+      const q = search.trim().toLocaleLowerCase("tr");
 
       data = data.filter((x) =>
         [x.material, x.name, x.parti, x.depo, x.machines].some((v) =>
@@ -162,12 +162,13 @@ export default function App() {
           material: item.material,
           name: item.name,
           type: item.type,
-          startDate: item.startDate,
+          startDate: null,
           usable: 0,
-          need: item.need, // malzemenin toplam ihtiyacı, toplanmaz
+          need: Number(item.need || 0), // malzemenin toplam ihtiyacı, toplanmaz
           depotArea: 0,
           partiCount: 0,
           hasCritical: false,
+          allDepot: true,
           jobs: new Set(),
         };
       }
@@ -175,9 +176,11 @@ export default function App() {
       const m = map[item.material];
 
       m.usable += Number(item.usable || 0);
+
       if (item.parti && item.parti !== "-") m.partiCount++;
       if (item.action === "Depoya Gönder") m.depotArea += Number(item.usable || 0);
       if (item.action === "Kritik") m.hasCritical = true;
+      if (item.action !== "Depoya Gönder") m.allDepot = false;
 
       if (item.startDate && (!m.startDate || item.startDate < m.startDate)) {
         m.startDate = item.startDate;
@@ -193,7 +196,7 @@ export default function App() {
         result: x.usable - x.need,
         action: x.hasCritical
           ? "Kritik"
-          : x.need <= 0
+          : x.allDepot || x.need <= 0
           ? "Depoya Gönder"
           : "Kullanılacak",
       }))
@@ -206,6 +209,18 @@ export default function App() {
 
   const depotCount = merged.filter((x) => x.action === "Depoya Gönder").length;
   const criticalCount = merged.filter((x) => x.action === "Kritik").length;
+
+  function toggleAll(checked) {
+    if (checked) setCardFilter({ all: true, depot: false, critical: false });
+  }
+
+  function toggleCard(key, checked) {
+    setCardFilter((prev) => {
+      const next = { ...prev, [key]: checked };
+      next.all = !next.depot && !next.critical;
+      return next;
+    });
+  }
 
   /* ===========================
      EKRAN
@@ -234,20 +249,7 @@ export default function App() {
         zppName={zppName}
       />
 
-      {error && (
-        <div
-          style={{
-            margin: "0 18px",
-            padding: "10px 14px",
-            borderRadius: 8,
-            background: "#fbe4e4",
-            color: "#c42323",
-            fontWeight: 600,
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {error && <div className="errorBox">{error}</div>}
 
       <div className="cards">
         <div className="card">
@@ -255,13 +257,7 @@ export default function App() {
             <input
               type="checkbox"
               checked={cardFilter.all}
-              onChange={(e) =>
-                setCardFilter(
-                  e.target.checked
-                    ? { all: true, depot: false, critical: false }
-                    : (prev) => ({ ...prev, all: false })
-                )
-              }
+              onChange={(e) => toggleAll(e.target.checked)}
             />
             <span>{days} Günlük Malzeme</span>
           </label>
@@ -273,13 +269,7 @@ export default function App() {
             <input
               type="checkbox"
               checked={cardFilter.depot}
-              onChange={(e) =>
-                setCardFilter((prev) => {
-                  const next = { ...prev, depot: e.target.checked };
-                  next.all = !next.depot && !next.critical;
-                  return next;
-                })
-              }
+              onChange={(e) => toggleCard("depot", e.target.checked)}
             />
             <span>Depoya Gönder</span>
           </label>
@@ -291,13 +281,7 @@ export default function App() {
             <input
               type="checkbox"
               checked={cardFilter.critical}
-              onChange={(e) =>
-                setCardFilter((prev) => {
-                  const next = { ...prev, critical: e.target.checked };
-                  next.all = !next.depot && !next.critical;
-                  return next;
-                })
-              }
+              onChange={(e) => toggleCard("critical", e.target.checked)}
             />
             <span>Kritik</span>
           </label>
