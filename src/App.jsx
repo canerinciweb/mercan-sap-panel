@@ -14,7 +14,8 @@ import { parseZparti, parseZpp } from "./utils/parser";
 import { mergeData } from "./utils/calculate";
 
 export default function App() {
-  const [category, setCategory] = useState("Her İkisi");
+  const [category, setCategory] = useState("Tümü");
+const [days, setDays] = useState(3);
   const [search, setSearch] = useState("");
   const [selectedMachine, setSelectedMachine] = useState("Tümü");
   const [summaryMode, setSummaryMode] = useState(false);
@@ -41,11 +42,8 @@ export default function App() {
     const rows = await readExcel(file);
 
     // 441507502 satırını kontrol ediyoruz
-    const test = rows.find(
-      (r) => String(r["Malzeme"]).trim() === "441507502"
-    );
-
-    console.log("========== ZPARTİ TEST ==========");
+    const merged = useMemo(() => mergeData(zparti, zpp, days), [zparti, zpp, days]);
+        console.log("========== ZPARTİ TEST ==========");
     console.log("Satır:", test);
     console.log("Uzunluk:", test?.["Uzunluk"]);
     console.log("Tip:", typeof test?.["Uzunluk"]);
@@ -76,21 +74,16 @@ export default function App() {
   const filteredBase = useMemo(() => {
     let data = [...merged];
 
-    if (category === "Hammadde")
-      data = data.filter((x) => x.type === "Hammadde");
+    if (category !== "Tümü") data = data.filter((x) => x.type.includes(category));
 
-    if (category === "Silikon")
-      data = data.filter((x) => x.type === "Silikon");
-
-    if (search.trim()) {
-      const q = search.toLowerCase();
-
-      data = data.filter(
-        (x) =>
-          x.material.toLowerCase().includes(q) ||
-          x.name.toLowerCase().includes(q)
-      );
-    }
+if (search.trim()) {
+  const q = search.toLocaleLowerCase("tr");
+  data = data.filter((x) =>
+    [x.material, x.name, x.parti, x.depo, x.machines].some((v) =>
+      String(v || "").toLocaleLowerCase("tr").includes(q)
+    )
+  );
+}
 
     const active = [];
 
@@ -155,19 +148,14 @@ export default function App() {
 
     filtered.forEach((item) => {
       if (!map[item.material]) {
-        map[item.material] = {
-          material: item.material,
-          name: item.name,
-          type: item.type,
-          usable: Number(item.usable || item.stock) || 0,
-          need: 0,
-          jobs: new Set(),
-        };
-      }
+  map[item.material] = {
+    material: item.material, name: item.name, type: item.type,
+    startDate: item.startDate, usable: 0, need: item.need, jobs: new Set(),
+  };
+}
+map[item.material].usable += item.usable;
 
-      map[item.material].need += Number(item.need || 0);
-
-      String(item.jobOrders || "")
+            String(item.jobOrders || "")
         .split(/\n|,/)
         .map((x) => x.trim())
         .filter(Boolean)
@@ -207,6 +195,8 @@ export default function App() {
         onExport={() => exportStockExcel(filtered)}
         summaryMode={summaryMode}
         setSummaryMode={setSummaryMode}
+        days={days}
+  setDays={setDays}
       />
 
       <UploadPanel
@@ -231,7 +221,7 @@ export default function App() {
                 }))
               }
             />
-            <span>3 Günlük Malzeme</span>
+            <span>{days} Günlük Malzeme</span>
           </label>
           <h2>{merged.length}</h2>
         </div>
@@ -273,14 +263,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="mainLayout">
-        {!summaryMode && (
-          <MachinePanel
-            machines={machines}
-            selectedMachine={selectedMachine}
-            setSelectedMachine={setSelectedMachine}
-          />
-        )}
+      <div className={summaryMode ? "mainLayout single" : "mainLayout"}>
 
         {summaryMode ? (
           <SummaryTable data={summaryData} />

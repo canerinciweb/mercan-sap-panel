@@ -1,70 +1,59 @@
 export default function StockTable({ data }) {
-  const format = (value) =>
-    Number(value || 0).toLocaleString("tr-TR", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3,
-    });
+  const format = (v, d = 1) =>
+    Number(v || 0).toLocaleString("tr-TR", { maximumFractionDigits: d });
 
-  const formatDate = (date) => {
-    if (!date) return "-";
-    return new Date(date).toLocaleDateString("tr-TR");
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleString("tr-TR", { dateStyle: "short", timeStyle: "short" }) : "-";
+
+  const buttonClass = {
+    "Kritik": "statusButton red",
+    "Depoya Gönder": "statusButton blue",
+    "Kısmi": "statusButton amber",
+    "Kullanılacak": "statusButton green",
   };
 
   return (
-    <div className="tableWrap">
-      <table className="stockTable">
+    <div className="stockTable">
+      <table>
         <thead>
           <tr>
             <th>Malzeme</th>
-            <th>MES İşEmri</th>
-            <th>Planlanan Tarih</th>
             <th>Tip</th>
-            <th>Hatlar</th>
-            <th>Kullanılabilir</th>
-            <th>PL Kalan</th>
-            <th>Sonuç</th>
+            <th>Parti</th>
+            <th>Depo Yeri</th>
+            <th>En</th>
+            <th>Uzunluk (m)</th>
+            <th>Alan (m²)</th>
+            <th>Kullanılacak (m²)</th>
             <th>Durum</th>
+            <th>Plan</th>
           </tr>
         </thead>
-
         <tbody>
           {data.map((item) => (
-            <tr key={item.material}>
+            <tr key={`${item.material}-${item.parti}`}>
               <td>
                 <div className="materialCode">{item.material}</div>
                 <div className="materialName">{item.name}</div>
               </td>
-
-              <td style={{ maxWidth: "220px" }}>
-                <div className="jobOrders">{item.jobOrders || "-"}</div>
-              </td>
-
-              <td>{formatDate(item.startDate)}</td>
-
               <td>{item.type}</td>
-
-              <td>{item.machines}</td>
-
-              <td>{format(item.usable)} M²</td>
-
-              <td>{format(item.need)} M²</td>
-
-              <td className={item.remaining >= 0 ? "greenText" : "redText"}>
-                {format(item.remaining)} M²
-              </td>
-
+              <td>{item.parti || "-"}</td>
+              <td>{item.depo || "-"}</td>
+              <td>{format(item.en, 0)}</td>
+              <td>{format(item.uzunluk)}</td>
+              <td>{format(item.usable)}</td>
+              <td>{item.used > 0 ? format(item.used) : "-"}</td>
               <td>
-                <button
-                  className={
-                    item.action === "Kritik"
-                      ? "statusButton red"
-                      : item.action === "Depoya Gönder"
-                      ? "statusButton blue"
-                      : "statusButton green"
-                  }
-                >
-                  {item.action}
+                <button className={buttonClass[item.action]}>
+                  {item.reason || item.action}
                 </button>
+              </td>
+              <td className="jobOrders">
+                {item.need > 0
+                  ? `İlk: ${formatDate(item.startDate)} ${item.machines}`
+                  : item.nextDate
+                  ? `Sonraki: ${formatDate(item.nextDate)}`
+                  : "Planda sonraki iş yok"}
               </td>
             </tr>
           ))}

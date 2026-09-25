@@ -439,3 +439,6 @@
 .summaryButton.active{
   background:#0f9d58;
 }
+.mainLayout.single { grid-template-columns: 1fr; }
+.statusButton.amber { background: #b45309; }
+.stockTable { overflow-x: auto; }

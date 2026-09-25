@@ -2,16 +2,18 @@ import * as XLSX from "xlsx";
 
 export function exportStockExcel(data) {
   const rows = data.map((item) => ({
-    "Malzeme Kodu": item.material,
-    "Malzeme Adı": item.name,
-    "MES İşEmri": item.jobOrders,
-    "Tip": item.type,
-    "Hatlar": item.machines,
-    "Mevcut Stok": item.stock,
-    "3 Gün İhtiyaç": item.need,
-    "Kalacak": item.remaining,
-    "Durum": item.action,
-  }));
+  "Malzeme Kodu": item.material,
+  "Malzeme Adı": item.name,
+  "Tip": item.type,
+  "Parti": item.parti,
+  "Depo Yeri": item.depo,
+  "En": item.en,
+  "Uzunluk (m)": item.uzunluk,
+  "Alan (m²)": Math.round(item.usable * 100) / 100,
+  "Kullanılacak (m²)": Math.round(item.used * 100) / 100,
+  "Durum": item.reason || item.action,
+  "Hatlar": item.machines,
+}));
 
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
