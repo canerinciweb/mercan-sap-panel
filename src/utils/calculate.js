@@ -3,8 +3,8 @@
 ========================================================= */
 
 /* Parti eni (ZPARTİ H) ile TopDlmEni (ZPP022 N) toleransı, cm */
-export const TOL_ALT = 1; // en en fazla 1 cm dar olabilir
-export const TOL_UST = 2; // en en fazla 2 cm geniş olabilir
+export const TOL_ALT = 3; // en en fazla 1 cm dar olabilir
+export const TOL_UST = 3; // en en fazla 2 cm geniş olabilir
 
 /* Üretimde kullanılabilen stok tipleri (BLOKE / KALİTE kullanılamaz) */
 export const KULLANILABILIR_STOK = ["TAHDITSZ"];
