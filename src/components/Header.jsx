@@ -1,3 +1,3 @@
 export default function Header() {
-  return <div className="header">SAP STOK KONTROL PANELİ</div>;
+  return <div className="header">CİNCİ STOK TAKİP</div>;
 }
