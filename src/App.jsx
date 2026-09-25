@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import "./App.css";
-import { exportStockExcel } from "./utils/exportExcel";
 
 import Header from "./components/Header";
 import Toolbar from "./components/Toolbar";
@@ -12,10 +11,21 @@ import SummaryTable from "./components/SummaryTable";
 import { readExcel } from "./utils/excel";
 import { parseZparti, parseZpp } from "./utils/parser";
 import { mergeData } from "./utils/calculate";
+import { exportStockExcel } from "./utils/exportExcel";
+
+const splitList = (text) =>
+  String(text || "")
+    .split(/\n|,/)
+    .map((x) => x.trim())
+    .filter((x) => x && x !== "-");
 
 export default function App() {
+  /* ===========================
+     STATE
+  =========================== */
+
   const [category, setCategory] = useState("Tümü");
-const [days, setDays] = useState(3);
+  const [days, setDays] = useState(3);
   const [search, setSearch] = useState("");
   const [selectedMachine, setSelectedMachine] = useState("Tümü");
   const [summaryMode, setSummaryMode] = useState(false);
@@ -25,122 +35,122 @@ const [days, setDays] = useState(3);
 
   const [zpartiName, setZpartiName] = useState("");
   const [zppName, setZppName] = useState("");
+  const [error, setError] = useState("");
 
   const [cardFilter, setCardFilter] = useState({
-    threeDay: true,
+    all: true,
     depot: false,
     critical: false,
   });
 
   /* ===========================
-     ZPARTİ YÜKLE
+     DOSYA YÜKLEME
   =========================== */
 
   async function handleZparti(file) {
     if (!file) return;
+    setError("");
 
-    const rows = await readExcel(file);
-
-    // 441507502 satırını kontrol ediyoruz
-    const merged = useMemo(() => mergeData(zparti, zpp, days), [zparti, zpp, days]);
-        console.log("========== ZPARTİ TEST ==========");
-    console.log("Satır:", test);
-    console.log("Uzunluk:", test?.["Uzunluk"]);
-    console.log("Tip:", typeof test?.["Uzunluk"]);
-    console.log("=================================");
-
-    setZparti(parseZparti(rows));
-    setZpartiName(file.name);
+    try {
+      const rows = await readExcel(file);
+      setZparti(parseZparti(rows));
+      setZpartiName(file.name);
+    } catch (e) {
+      console.error(e);
+      setError(`ZPARTİ okunamadı: ${e.message}`);
+    }
   }
-
-  /* ===========================
-     ZPP YÜKLE
-  =========================== */
 
   async function handleZpp(file) {
     if (!file) return;
+    setError("");
 
-    const rows = await readExcel(file);
-    setZpp(parseZpp(rows));
-    setZppName(file.name);
+    try {
+      const rows = await readExcel(file);
+      setZpp(parseZpp(rows));
+      setZppName(file.name);
+    } catch (e) {
+      console.error(e);
+      setError(`ZPP022 okunamadı: ${e.message}`);
+    }
   }
 
-  const merged = useMemo(() => mergeData(zparti, zpp), [zparti, zpp]);
+  /* ===========================
+     HESAP
+  =========================== */
+
+  const merged = useMemo(() => mergeData(zparti, zpp, days), [zparti, zpp, days]);
 
   /* ===========================
-     Hat filtresi öncesi
+     KATEGORİ + ARAMA + KART FİLTRESİ
   =========================== */
 
   const filteredBase = useMemo(() => {
-    let data = [...merged];
+    let data = merged;
 
-    if (category !== "Tümü") data = data.filter((x) => x.type.includes(category));
+    if (category !== "Tümü") {
+      data = data.filter((x) => x.type.includes(category));
+    }
 
-if (search.trim()) {
-  const q = search.toLocaleLowerCase("tr");
-  data = data.filter((x) =>
-    [x.material, x.name, x.parti, x.depo, x.machines].some((v) =>
-      String(v || "").toLocaleLowerCase("tr").includes(q)
-    )
-  );
-}
+    if (search.trim()) {
+      const q = search.toLocaleLowerCase("tr");
+
+      data = data.filter((x) =>
+        [x.material, x.name, x.parti, x.depo, x.machines].some((v) =>
+          String(v || "").toLocaleLowerCase("tr").includes(q)
+        )
+      );
+    }
 
     const active = [];
-
     if (cardFilter.depot) active.push("Depoya Gönder");
     if (cardFilter.critical) active.push("Kritik");
 
-    if (active.length)
+    if (active.length) {
       data = data.filter((x) => active.includes(x.action));
+    }
 
     return data;
   }, [merged, category, search, cardFilter]);
 
   /* ===========================
-     Hat listesi
+     HAT LİSTESİ
   =========================== */
 
   const machines = useMemo(() => {
     const counts = {};
 
     filteredBase.forEach((item) => {
-      (item.machines || "")
-        .split(",")
-        .map((m) => m.trim())
-        .filter(Boolean)
-        .forEach((machine) => {
-          counts[machine] = (counts[machine] || 0) + 1;
-        });
+      splitList(item.machines).forEach((machine) => {
+        counts[machine] = (counts[machine] || 0) + 1;
+      });
     });
 
     return [
       { name: "Tümü", count: filteredBase.length },
       ...Object.keys(counts)
         .sort((a, b) => a.localeCompare(b, "tr"))
-        .map((name) => ({
-          name,
-          count: counts[name],
-        })),
+        .map((name) => ({ name, count: counts[name] })),
     ];
   }, [filteredBase]);
 
+  /* Seçili hat listeden düştüyse "Tümü"ne dön */
+  const activeMachine = machines.some((m) => m.name === selectedMachine)
+    ? selectedMachine
+    : "Tümü";
+
   /* ===========================
-     Hat filtresi
+     HAT FİLTRESİ
   =========================== */
 
   const filtered = useMemo(() => {
-    if (selectedMachine === "Tümü") return filteredBase;
+    if (activeMachine === "Tümü") return filteredBase;
 
-    return filteredBase.filter((x) =>
-      (x.machines || "")
-        .split(",")
-        .map((m) => m.trim())
-        .includes(selectedMachine)
-    );
-  }, [filteredBase, selectedMachine]);
+    return filteredBase.filter((x) => splitList(x.machines).includes(activeMachine));
+  }, [filteredBase, activeMachine]);
 
   /* ===========================
-     Özet
+     ÖZET (malzeme bazında)
   =========================== */
 
   const summaryData = useMemo(() => {
@@ -148,129 +158,25 @@ if (search.trim()) {
 
     filtered.forEach((item) => {
       if (!map[item.material]) {
-  map[item.material] = {
-    material: item.material, name: item.name, type: item.type,
-    startDate: item.startDate, usable: 0, need: item.need, jobs: new Set(),
-  };
-}
-map[item.material].usable += item.usable;
-
-            String(item.jobOrders || "")
-        .split(/\n|,/)
-        .map((x) => x.trim())
-        .filter(Boolean)
-        .forEach((o) => map[item.material].jobs.add(o));
-    });
-
-    return Object.values(map)
-      .map((x) => {
-        const result = x.usable - x.need;
-
-        return {
-          ...x,
-          jobCount: x.jobs.size,
-          result,
-          action:
-            x.need === 0
-              ? "Depoya Gönder"
-              : result < 0
-              ? "Kritik"
-              : result > 0
-              ? "Depoya Gönder"
-              : "Kullanılacak",
+        map[item.material] = {
+          material: item.material,
+          name: item.name,
+          type: item.type,
+          startDate: item.startDate,
+          usable: 0,
+          need: item.need, // malzemenin toplam ihtiyacı, toplanmaz
+          depotArea: 0,
+          partiCount: 0,
+          hasCritical: false,
+          jobs: new Set(),
         };
-      })
-      .sort((a, b) => a.material.localeCompare(b.material));
-  }, [filtered]);
+      }
 
-  return (
-    <div className="app">
-      <Header />
+      const m = map[item.material];
 
-      <Toolbar
-        category={category}
-        setCategory={setCategory}
-        search={search}
-        setSearch={setSearch}
-        onExport={() => exportStockExcel(filtered)}
-        summaryMode={summaryMode}
-        setSummaryMode={setSummaryMode}
-        days={days}
-  setDays={setDays}
-      />
+      m.usable += Number(item.usable || 0);
+      if (item.parti && item.parti !== "-") m.partiCount++;
+      if (item.action === "Depoya Gönder") m.depotArea += Number(item.usable || 0);
+      if (item.action === "Kritik") m.hasCritical = true;
 
-      <UploadPanel
-        handleZparti={handleZparti}
-        handleZpp={handleZpp}
-        zpartiName={zpartiName}
-        zppName={zppName}
-      />
-
-      <div className="cards">
-        <div className="card">
-          <label className="cardTitle">
-            <input
-              type="checkbox"
-              checked={cardFilter.threeDay}
-              onChange={(e) =>
-                setCardFilter((prev) => ({
-                  ...prev,
-                  threeDay: e.target.checked,
-                  depot: e.target.checked ? false : prev.depot,
-                  critical: e.target.checked ? false : prev.critical,
-                }))
-              }
-            />
-            <span>{days} Günlük Malzeme</span>
-          </label>
-          <h2>{merged.length}</h2>
-        </div>
-
-        <div className="card">
-          <label className="cardTitle">
-            <input
-              type="checkbox"
-              checked={cardFilter.depot}
-              onChange={(e) =>
-                setCardFilter((prev) => ({
-                  ...prev,
-                  depot: e.target.checked,
-                  threeDay: e.target.checked ? false : prev.threeDay,
-                }))
-              }
-            />
-            <span>Depoya Gönder</span>
-          </label>
-          <h2>{merged.filter((x) => x.action === "Depoya Gönder").length}</h2>
-        </div>
-
-        <div className="card">
-          <label className="cardTitle">
-            <input
-              type="checkbox"
-              checked={cardFilter.critical}
-              onChange={(e) =>
-                setCardFilter((prev) => ({
-                  ...prev,
-                  critical: e.target.checked,
-                  threeDay: e.target.checked ? false : prev.threeDay,
-                }))
-              }
-            />
-            <span>Kritik</span>
-          </label>
-          <h2>{merged.filter((x) => x.action === "Kritik").length}</h2>
-        </div>
-      </div>
-
-      <div className={summaryMode ? "mainLayout single" : "mainLayout"}>
-
-        {summaryMode ? (
-          <SummaryTable data={summaryData} />
-        ) : (
-          <StockTable data={filtered} />
-        )}
-      </div>
-    </div>
-  );
-}
+      if (item.startDate && (!m.startDate ||
