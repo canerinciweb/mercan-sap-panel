@@ -65,8 +65,8 @@ export function parseZpp(rows) {
         jobOrder: String(row["MES İşEmri"] || "").trim(),
         material: normCode(row["Bileşen GK"]),
         name: String(row["Mlz.Adı"] || "").trim(),
-        dilmeEni: toNumber(row["N"]),
-        need: toNumber(row["O"]),
+                dilmeEni: toNumber(row["TopDlmEni"] ?? row["N"]),
+        need: toNumber(row["O"]), // PL kalan (m²)
         start: dateTime(row["AF"], row["AG"]),
         end: dateTime(row["AI"], row["AC"]),
       };
